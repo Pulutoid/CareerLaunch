@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLaunch - Employer Page</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <h1>CareerLaunch - Employer Page</h1>
+        <nav>
+            <!-- Navigation Menu -->
+            <ul>
+                <li><a href="index.html">Student CV Page</a></li>
+                <li><a href="#search-students">Search Students</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Search Students Section -->
+        <section id="search-students">
+            <h2>Search for Students</h2>
+            <form id="search-student-form">
+                <label for="student-id">Student ID:</label>
+                <input type="text" id="student-id" name="student-id" required>
+                
+                <button type="submit">Search</button>
+            </form>
+        </section>
+
+        <!-- Display Results Section -->
+        <section id="student-info">
+            <h2>Student Information</h2>
+            <div id="student-result">
+                <!-- Student info will be displayed here after searching -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 CareerLaunch</p>
+    </footer>
+
+    <script src="employerPage.js"></script>
+</body>
+</html>

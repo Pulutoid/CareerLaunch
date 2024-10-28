@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLaunch - Signup</title>
+    <style>
+        .message {
+            display: none;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+
+        <main>
+            <section id="signup-section">
+                <h2>Create Your Account</h2>
+                <form id="signup-form">
+                    <div>
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div>
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div>
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <div>
+                        <label for="confirm-password">Confirm Password:</label>
+                        <input type="password" id="confirm-password" required>
+                    </div>
+                    <button type="submit" id="submitSignUp">Sign Up</button>
+                </form>
+
+                <div id="signUpMessage" class="message"></div>
+
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2024 CareerLaunch</p>
+        </footer>
+    </div>
+
+    <script type="module" src="firebaseAuth.js"></script>
+</body>
+
+</html>

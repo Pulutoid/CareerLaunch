@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLaunch - Dashboard</title>
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 300px;
+        }
+
+        .activity-feed {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .activity-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-section {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="dashboard-nav">
+            <div class="nav-left">
+                <a href="index.html">Home</a>
+                <a href="cv-builder.html">CV Builder</a>
+                <a href="job-search.html">Job Search</a>
+            </div>
+            <div class="nav-right">
+                <span id="userDisplayName"></span>
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Dashboard Content -->
+        <main>
+            <!-- Profile Summary -->
+            <section class="profile-section">
+                <h2>Welcome, <span id="userName">User</span>!</h2>
+                <div id="profileCompletion"></div>
+            </section>
+
+            <!-- Statistics Grid -->
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Profile Views</h3>
+                    <div id="profileViews">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Applications Sent</h3>
+                    <div id="applicationsSent">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Interviews Scheduled</h3>
+                    <div id="interviewsScheduled">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>CV Downloads</h3>
+                    <div id="cvDownloads">0</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="chart-container">
+                <canvas id="activityChart"></canvas>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <section class="activity-feed">
+                <h3>Recent Activity</h3>
+                <div id="activityList"></div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+
+</html>
