@@ -4,71 +4,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerLaunch - Signup</title>
-    <style>
-        .message {
-            display: none;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
+    <title>Sign Up - CareerLaunch</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="container">
-        <nav>
-            <a href="index.html">Home</a>
+        <nav class="nav-bar">
+            <a href="home.html">Home</a>
             <a href="login.html">Login</a>
         </nav>
 
-        <main>
-            <section id="signup-section">
+        <main class="main-content" role="main">
+            <section id="signup-section" class="section form-section">
                 <h2>Create Your Account</h2>
                 <form id="signup-form">
-                    <div>
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" required>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
                     </div>
-                    <div>
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" required>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
                     </div>
-                    <div>
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" required>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
                     </div>
-                    <div>
-                        <label for="confirm-password">Confirm Password:</label>
-                        <input type="password" id="confirm-password" required>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
                     </div>
-                    <button type="submit" id="submitSignUp">Sign Up</button>
+
+                    <div class="form-group">
+                        <label for="accountType">Account Type</label>
+                        <select id="accountType" name="accountType" required>
+                            <option value="student">Student</option>
+                            <option value="employer">Employer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <div id="adminKeySection" class="form-group hidden">
+                        <label for="adminKey">Admin Pre-shared Key</label>
+                        <input type="password" id="adminKey" name="adminKey">
+                    </div>
+
+                    <div id="studentIdSection" class="form-group hidden">
+                        <label for="studentId">Student ID</label>
+                        <input type="text" id="studentId" name="studentId">
+                    </div>
+
+                    <div id="companySection" class="form-group hidden">
+                        <label for="companyName">Company Name</label>
+                        <input type="text" id="companyName" name="companyName">
+                        <label for="companyPosition">Position at Company</label>
+                        <input type="text" id="companyPosition" name="companyPosition">
+                    </div>
+
+                    <button type="submit" class="btn-primary">Sign Up</button>
                 </form>
 
                 <div id="signUpMessage" class="message"></div>
 
-                <p>Already have an account? <a href="login.html">Login here</a></p>
+                <p class="login-link">
+                    Already have an account? <a href="login.html">Login here</a>
+                </p>
             </section>
         </main>
 
         <footer>
-            <p>© 2024 CareerLaunch</p>
+            <p>&copy; 2024 CareerLaunch</p>
         </footer>
     </div>
-
-    <script type="module" src="firebaseAuth.js"></script>
+    <script type="module" src="js/firebaseSignup.js"></script>
 </body>
 
 </html>

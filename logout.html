@@ -1,16 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logout | CareerLaunch</title>
+    <title>Logged Out - CareerLaunch</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="logout-container" align="center">
-        <h1>You've Successfully Logged Out</h1>
-        <p>Thank you for using CareerLaunch. We hope to see you again soon!</p>
-        <a href="login.html" class="btn">Login Again</a>
+    <div class="container">
+        <nav class="nav-bar">
+            <a href="home.html">Home</a>
+        </nav>
+
+        <main class="main-content">
+            <section class="logout-container">
+                <h1>You've Successfully Logged Out</h1>
+                <p>Thank you for using CareerLaunch. We hope to see you again soon!</p>
+                <a href="login.html" class="btn-primary">Login Again</a>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 CareerLaunch</p>
+        </footer>
     </div>
+    <script>
+        // Clear any stored user data
+        localStorage.clear();
+        sessionStorage.clear();
+    </script>
 </body>
+
 </html>

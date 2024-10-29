@@ -4,80 +4,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerLaunch - Login</title>
-    <style>
-        /* Message display styling */
-        .message {
-            display: none;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .info {
-            background-color: #cce5ff;
-            color: #004085;
-        }
-    </style>
+    <title>Login - CareerLaunch</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="container">
-        <!-- Navigation Bar -->
-        <nav>
-            <a href="index.html">Home</a>
+        <nav class="nav-bar">
+            <a href="home.html">Home</a>
             <a href="signup.html">Sign Up</a>
         </nav>
 
-        <!-- Main Content Section -->
-        <main>
-            <section id="login-section">
+        <main class="main-content" role="main">
+            <section id="login-section" class="section form-section">
                 <h2>Login to Your Account</h2>
-
-                <!-- Login Form -->
                 <form id="login-form">
-                    <div>
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" required>
-                    </div>
-                    <div>
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" required>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
                     </div>
 
-                    <!-- Login Controls -->
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
                     <div class="form-controls">
-                        <button type="submit" id="submitLogin">Login</button>
-                        <a href="#" id="forgotPassword">Forgot Password?</a>
+                        <button type="submit" class="btn-primary">Login</button>
+                        <a href="#" id="forgotPassword" class="forgot-password">Forgot Password?</a>
                     </div>
                 </form>
 
-                <!-- Message Display Area -->
                 <div id="loginMessage" class="message"></div>
 
-                <!-- Registration Link -->
-                <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+                <p class="signup-link">
+                    Don't have an account? <a href="signup.html">Sign up here</a>
+                </p>
             </section>
         </main>
 
         <footer>
-            <p>© 2024 CareerLaunch</p>
+            <p>&copy; 2024 CareerLaunch</p>
         </footer>
     </div>
-
-    <!-- Load our modular JavaScript -->
     <script type="module" src="js/firebaseLogin.js"></script>
 </body>
 
