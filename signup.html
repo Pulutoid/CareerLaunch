@@ -5,82 +5,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - CareerLaunch</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <div class="container">
-        <nav class="nav-bar">
-            <a href="home.html">Home</a>
-            <a href="login.html">Login</a>
-        </nav>
+<body class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                </div>
+                <div class="flex items-center">
+                    <a href="home.html" class="text-gray-600 hover:text-kfupm-500">Home</a>
+                    <a href="login.html" class="ml-4 text-gray-600 hover:text-kfupm-500">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-        <main class="main-content" role="main">
-            <section id="signup-section" class="section form-section">
-                <h2>Create Your Account</h2>
-                <form id="signup-form">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
+    <main class="max-w-md mx-auto mt-10 px-4">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Create Your Account</h2>
+
+            <form id="signup-form" class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="username" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm
+                        Password</label>
+                    <input type="password" id="confirmPassword" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="accountType" class="block text-sm font-medium text-gray-700">Account Type</label>
+                    <select id="accountType" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                        <option value="">Select account type</option>
+                        <option value="student">Student</option>
+                        <option value="employer">Employer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <!-- Additional fields that show/hide based on account type -->
+                <div id="adminKeySection" class="hidden">
+                    <label for="adminKey" class="block text-sm font-medium text-gray-700">Admin Pre-shared Key</label>
+                    <input type="password" id="adminKey"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                </div>
+
+                <div id="studentIdSection" class="hidden">
+                    <label for="studentId" class="block text-sm font-medium text-gray-700">Student ID</label>
+                    <input type="text" id="studentId"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                </div>
+
+                <div id="companySection" class="hidden space-y-4">
+                    <div>
+                        <label for="companyName" class="block text-sm font-medium text-gray-700">Company Name</label>
+                        <input type="text" id="companyName"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
                     </div>
-
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                    <div>
+                        <label for="companyPosition" class="block text-sm font-medium text-gray-700">Position at
+                            Company</label>
+                        <input type="text" id="companyPosition"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
+                <div>
+                    <button type="submit"
+                        class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kfupm-500 hover:bg-kfupm-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kfupm-500">
+                        Sign Up
+                    </button>
+                </div>
+            </form>
 
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
-                    </div>
+            <div id="signUpMessage" class="mt-4 p-4 rounded-md hidden"></div>
 
-                    <div class="form-group">
-                        <label for="accountType">Account Type</label>
-                        <select id="accountType" name="accountType" required>
-                            <option value="student">Student</option>
-                            <option value="employer">Employer</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-
-                    <div id="adminKeySection" class="form-group hidden">
-                        <label for="adminKey">Admin Pre-shared Key</label>
-                        <input type="password" id="adminKey" name="adminKey">
-                    </div>
-
-                    <div id="studentIdSection" class="form-group hidden">
-                        <label for="studentId">Student ID</label>
-                        <input type="text" id="studentId" name="studentId">
-                    </div>
-
-                    <div id="companySection" class="form-group hidden">
-                        <label for="companyName">Company Name</label>
-                        <input type="text" id="companyName" name="companyName">
-                        <label for="companyPosition">Position at Company</label>
-                        <input type="text" id="companyPosition" name="companyPosition">
-                    </div>
-
-                    <button type="submit" class="btn-primary">Sign Up</button>
-                </form>
-
-                <div id="signUpMessage" class="message"></div>
-
-                <p class="login-link">
-                    Already have an account? <a href="login.html">Login here</a>
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Already have an account?
+                    <a href="login.html" class="font-medium text-kfupm-500 hover:text-blue-500">
+                        Login here
+                    </a>
                 </p>
-            </section>
-        </main>
+            </div>
+        </div>
+    </main>
 
-        <footer>
-            <p>&copy; 2024 CareerLaunch</p>
-        </footer>
-    </div>
+    <footer class="mt-8 text-center text-gray-500">
+        <p>© 2024 CareerLaunch</p>
+    </footer>
+
     <script type="module" src="js/firebaseSignup.js"></script>
+    <!--- Add this in the <head> section of all HTML files, right after tailwind CDN script -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kfupm': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#006B3F',  // KFUPM primary green
+                            600: '#005a35',  // Darker shade for hover
+                            700: '#004a2b',  // Even darker for active states
+                            800: '#003920',
+                            900: '#002915'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
 </body>
 
 </html>

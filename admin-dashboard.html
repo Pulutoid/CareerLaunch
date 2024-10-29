@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CareerLaunch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kfupm': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#006B3F',
+                            600: '#005a35',
+                            700: '#004a2b',
+                            800: '#003920',
+                            900: '#002915'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="min-h-screen bg-kfupm-50" data-requires-auth="true">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Admin Panel</span>
+                    <span id="userDisplayName" class="text-gray-700"></span>
+                    <button onclick="logout()"
+                        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Admin Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Total Users</h3>
+                <p id="totalUsers" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Active Jobs</h3>
+                <p id="activeJobs" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Total Applications</h3>
+                <p id="totalApplications" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">System Alerts</h3>
+                <p id="systemAlerts" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-medium text-gray-900">User Management</h2>
+                <button class="px-4 py-2 bg-kfupm-500 text-white rounded-md hover:bg-kfupm-600">
+                    Export Data
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                User</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTable" class="bg-white divide-y divide-gray-200">
+                        <!-- User rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System Activity -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">System Activity</h2>
+            <div class="h-64">
+                <canvas id="adminActivityChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-8">
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <div class="text-center text-gray-500">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/admin-dashboard.js"></script>
+</body>
+
+</html>

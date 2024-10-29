@@ -4,76 +4,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerLaunch - Build Your CV</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>CareerLaunch - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <!-- Header Section -->
-    <header>
-        <h1>CareerLaunch CV Builder</h1>
-        <nav>
-            <!-- Navigation Menu -->
-            <ul>
-                <li><a href="#personal-info">Personal Info</a></li>
-                <li><a href="#education">Education</a></li>
-                <li><a href="#work-experience">Work Experience</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="employer.html">Employer Page</a></li>
-                <li><a href="logout.html">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main>
-        <div class="logout-container" align="center">
-            <p>Start building your CV, or access your dashboard for more insights.</p>
-            <a href="dashboard.html" class="button">Go to Dashboard</a> <!-- Dashboard button -->
+<body class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="cv-builder.html" class="text-gray-600 hover:text-kfupm-500">CV Builder</a>
+                    <a href="job-search.html" class="text-gray-600 hover:text-kfupm-500">Job Search</a>
+                    <div id="userNav" class="hidden">
+                        <span id="userDisplayName" class="mr-4 text-gray-700"></span>
+                        <a href="dashboard.html"
+                            class="px-4 py-2 text-white bg-kfupm-500 rounded-md hover:bg-kfupm-600">Dashboard</a>
+                        <button onclick="logout()"
+                            class="ml-4 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
+                    </div>
+                    <div id="guestNav">
+                        <a href="login.html"
+                            class="px-4 py-2 text-white bg-kfupm-500 rounded-md hover:bg-kfupm-600">Login</a>
+                        <a href="signup.html"
+                            class="ml-4 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Sign
+                            Up</a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- Personal Information Section -->
-        <section id="personal-info">
-            <h2>Personal Information</h2>
-            <form id="personal-info-form">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
+    </nav>
 
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to CareerLaunch</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Your gateway to professional success at KFUPM. Build your
+                CV, find opportunities, and launch your career.</p>
+        </div>
 
-                <label for="phone">Phone:</label>
-                <input type="tel" id="phone" name="phone" required>
+        <div class="grid md:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-kfupm-500 text-2xl mb-4">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">CV Builder</h3>
+                <p class="text-gray-600 mb-4">Create professional CVs with our easy-to-use builder. Stand out to
+                    potential employers.</p>
+                <a href="cv-builder.html" class="text-kfupm-500 hover:text-blue-700">Get Started →</a>
+            </div>
 
-                <button type="submit">Save</button>
-            </form>
-        </section>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-kfupm-500 text-2xl mb-4">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Job Search</h3>
+                <p class="text-gray-600 mb-4">Find the perfect job opportunity. Browse listings from top companies.</p>
+                <a href="job-search.html" class="text-kfupm-500 hover:text-blue-700">Search Jobs →</a>
+            </div>
 
-        <!-- Education Section -->
-        <section id="education">
-            <h2>Education</h2>
-            <!-- Education form will go here -->
-        </section>
-
-        <!-- Work Experience Section -->
-        <section id="work-experience">
-            <h2>Work Experience</h2>
-            <!-- Work experience form will go here -->
-        </section>
-
-        <!-- Skills Section -->
-        <section id="skills">
-            <h2>Skills</h2>
-            <!-- Skills form will go here -->
-        </section>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-kfupm-500 text-2xl mb-4">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Track Progress</h3>
+                <p class="text-gray-600 mb-4">Monitor your applications and interviews. Stay organized in your job
+                    search.</p>
+                <a href="dashboard.html" class="text-kfupm-500 hover:text-blue-700">View Dashboard →</a>
+            </div>
+        </div>
     </main>
 
-    <!-- Footer Section -->
-    <footer>
-        <p>&copy; 2024 CareerLaunch</p>
+    <footer class="bg-white mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <div class="text-center text-gray-500">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
+        </div>
     </footer>
 
-    <!--  JavaScript file -->
-    <script src="studentPage.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <!--- Add this in the <head> section of all HTML files, right after tailwind CDN script -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kfupm': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#006B3F',  // KFUPM primary green
+                            600: '#005a35',  // Darker shade for hover
+                            700: '#004a2b',  // Even darker for active states
+                            800: '#003920',
+                            900: '#002915'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
 </body>
 
 </html>
