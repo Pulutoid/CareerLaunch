@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Dashboard - CareerLaunch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-gray-50" data-requires-auth="true">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Employer Account</span>
+                    <span id="userDisplayName" class="text-gray-700"></span>
+                    <button onclick="logout()"
+                        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Company Profile Summary -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="companyName">Company</span></h1>
+                    <p class="text-gray-600" id="companyPosition">Position</p>
+                </div>
+                <button onclick="editCompanyProfile()"
+                    class="px-4 py-2 text-sm text-kfupm-500 border border-kfupm-500 rounded-md hover:bg-kfupm-50">
+                    Edit Profile
+                </button>
+            </div>
+            <div id="profileCompletion" class="mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-kfupm-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <button onclick="postNewJob()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-plus-circle text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Post New Job</h3>
+                <p class="text-sm text-gray-600">Create a new job listing</p>
+            </button>
+
+            <button onclick="searchCandidates()"
+                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-search text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Search Candidates</h3>
+                <p class="text-sm text-gray-600">Find qualified students</p>
+            </button>
+
+            <button onclick="viewApplications()"
+                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-file-alt text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Review Applications</h3>
+                <p class="text-sm text-gray-600">Manage received applications</p>
+            </button>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Active Jobs</h3>
+                <p id="activeJobs" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Applications</h3>
+                <p id="totalApplications" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Profile Views</h3>
+                <p id="profileViews" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Interviews</h3>
+                <p id="scheduledInterviews" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+        </div>
+
+        <!-- Active Job Listings -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-medium text-gray-900">Active Job Listings</h2>
+                <div class="flex space-x-2">
+                    <button onclick="filterJobs('all')"
+                        class="px-3 py-1 text-sm rounded-md bg-kfupm-100 text-kfupm-700">All</button>
+                    <button onclick="filterJobs('active')"
+                        class="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700">Active</button>
+                    <button onclick="filterJobs('expired')"
+                        class="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700">Expired</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Posted</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applications
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobListingsTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Job listings will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Applications -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Applications</h2>
+            <div id="recentApplications" class="space-y-4">
+                <!-- Applications will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Application Trends Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Application Trends</h2>
+            <div class="h-64">
+                <canvas id="applicationTrendsChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-8">
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <div class="text-center text-gray-500">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    <script src="js/config/tailwind.config.js"></script>
+
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/employer-dashboard.js"></script>
+</body>
+
+</html>

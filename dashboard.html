@@ -1,6 +1,3 @@
-<!-- dashboard.html -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,6 +7,7 @@
     <title>Dashboard - CareerLaunch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body class="min-h-screen bg-gray-50" data-requires-auth="true">
@@ -22,6 +20,7 @@
                 <div class="flex items-center space-x-4">
                     <a href="cv-builder.html" class="text-gray-600 hover:text-kfupm-500">CV Builder</a>
                     <a href="job-search.html" class="text-gray-600 hover:text-kfupm-500">Job Search</a>
+                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Student Account</span>
                     <span id="userDisplayName" class="text-gray-700"></span>
                     <button onclick="logout()"
                         class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
@@ -33,13 +32,44 @@
     <main class="max-w-7xl mx-auto px-4 py-8">
         <!-- Welcome Section -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="userName">User</span>!</h1>
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="userName">Student</span>!</h1>
+                    <p class="text-gray-600" id="studentId">Student ID: #</p>
+                </div>
+                <button onclick="editProfile()"
+                    class="px-4 py-2 text-sm text-kfupm-500 border border-kfupm-500 rounded-md hover:bg-kfupm-50">
+                    Edit Profile
+                </button>
+            </div>
             <div id="profileCompletion" class="mt-4">
                 <div class="w-full bg-gray-200 rounded-full h-2">
                     <div class="bg-kfupm-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
                 <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
             </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <button onclick="createCV()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-file-alt text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Create CV</h3>
+                <p class="text-sm text-gray-600">Build your professional CV</p>
+            </button>
+
+            <button onclick="searchJobs()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-search text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Find Jobs</h3>
+                <p class="text-sm text-gray-600">Browse available positions</p>
+            </button>
+
+            <button onclick="viewApplications()"
+                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-paper-plane text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">My Applications</h3>
+                <p class="text-sm text-gray-600">Track your applications</p>
+            </button>
         </div>
 
         <!-- Statistics Grid -->
@@ -65,19 +95,32 @@
             </div>
         </div>
 
-        <!-- Activity Chart -->
+        <!-- Job Applications -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Activity Overview</h2>
-            <div class="h-64">
-                <canvas id="activityChart"></canvas>
+            <h2 class="text-lg font-medium text-gray-900 mb-4">My Applications</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Applications will be dynamically inserted here -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Recent Activity -->
+        <!-- Activity Chart -->
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
-            <div id="activityList" class="space-y-4">
-                <!-- Activity items will be dynamically inserted here -->
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Activity Overview</h2>
+            <div class="h-64">
+                <canvas id="activityChart"></canvas>
             </div>
         </div>
     </main>
@@ -90,32 +133,10 @@
         </div>
     </footer>
 
+    <script src="js/config/tailwind.config.js"></script>
+
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/dashboard.js"></script>
-    <!--- Add this in the <head> section of all HTML files, right after tailwind CDN script -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'kfupm': {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            200: '#bbf7d0',
-                            300: '#86efac',
-                            400: '#4ade80',
-                            500: '#006B3F',  // KFUPM primary green
-                            600: '#005a35',  // Darker shade for hover
-                            700: '#004a2b',  // Even darker for active states
-                            800: '#003920',
-                            900: '#002915'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
 </body>
 
 </html>

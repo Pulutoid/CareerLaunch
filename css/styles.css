@@ -1,0 +1,163 @@
+/* styles.css */
+/* Location: /css/styles.css */
+
+/* =========================================
+   1. Variables & Root Settings
+   ========================================= */
+:root {
+    /* Colors */
+    --primary-color: #006B3F;    /* KFUPM green */
+    --secondary-color: #2d3436;  /* Dark grey */
+    --accent-color: #34d399;     /* Light green for accents */
+    --background-color: #f8fafc;
+    --text-color: #1a1a1a;
+    --error-color: #ef4444;
+    --success-color: #10b981;
+    --card-bg: #ffffff;
+
+    /* Sizing & Spacing */
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+   2. Base & Reset Styles
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* =========================================
+   3. Layout Components
+   ========================================= */
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+}
+
+/* =========================================
+   4. Navigation
+   ========================================= */
+.nav-bar {
+    background-color: white;
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.nav-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    margin-right: 1.5rem;
+    font-weight: 500;
+    transition: color var(--transition-speed);
+}
+
+/* =========================================
+   5. Cards & Containers
+   ========================================= */
+.card {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+/* =========================================
+   6. Forms & Inputs
+   ========================================= */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    background-color: #f8fafc;
+    transition: all var(--transition-speed);
+}
+
+/* =========================================
+   7. Buttons
+   ========================================= */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* =========================================
+   8. Utilities
+   ========================================= */
+.hidden {
+    display: none;
+}
+
+.message {
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    margin: 1rem 0;
+}
+
+.message.error {
+    background-color: #fef2f2;
+    color: var(--error-color);
+}
+
+.message.success {
+    background-color: #ecfdf5;
+    color: var(--success-color);
+}
+
+/* =========================================
+   9. Responsive Design
+   ========================================= */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-bar {
+        padding: 1rem;
+    }
+}
