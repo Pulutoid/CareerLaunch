@@ -2,25 +2,34 @@
 import { auth, db, checkAuth } from './auth.js';
 import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
+console.log('[Dashboard] Initializing dashboard module');
+
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[Dashboard] DOM Content Loaded, initializing dashboard');
+    
     // Check authentication and redirect if needed
+    console.log('[Dashboard] Checking authentication');
     checkAuth(['student', 'employer', 'admin']);
 
     const userId = localStorage.getItem('loggedInUserId');
     const accountType = localStorage.getItem('accountType');
+    console.log(`[Dashboard] User ID: ${userId}, Account Type: ${accountType}`);
 
     if (!userId) {
+        console.warn('[Dashboard] No user ID found, redirecting to login');
         window.location.href = 'login.html';
         return;
     }
 
     // Redirect admin users to admin dashboard
     if (accountType === 'admin') {
+        console.log('[Dashboard] Admin user detected, redirecting to admin dashboard');
         window.location.href = 'admin-dashboard.html';
         return;
     }
 
     // Initialize dashboard elements
+    console.log('[Dashboard] Initializing dashboard elements');
     const userNameElement = document.getElementById('userName');
     const profileViews = document.getElementById('profileViews');
     const applicationsSent = document.getElementById('applicationsSent');
@@ -31,51 +40,56 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // Fetch user data
+        console.log(`[Dashboard] Fetching user data for ID: ${userId}`);
         const userDoc = await getDoc(doc(db, "users", userId));
         const userData = userDoc.data();
+        console.log('[Dashboard] User data fetched:', { ...userData, password: '[REDACTED]' });
 
         // Update username
         if (userNameElement) {
             userNameElement.textContent = userData.username;
+            console.log(`[Dashboard] Updated username display: ${userData.username}`);
         }
 
         // Calculate and update profile completion
+        console.log('[Dashboard] Calculating profile completion');
         const completionPercentage = calculateProfileCompletion(userData);
         if (profileCompletion) {
-            const progressBar = profileCompletion.querySelector('.bg-kfupm-500'); // Updated to KFUPM color
+            const progressBar = profileCompletion.querySelector('.bg-kfupm-500');
             if (progressBar) {
                 progressBar.style.width = `${completionPercentage}%`;
+                console.log(`[Dashboard] Updated progress bar width: ${completionPercentage}%`);
             }
             const percentageText = profileCompletion.querySelector('p');
             if (percentageText) {
                 percentageText.textContent = `Profile completion: ${completionPercentage}%`;
+                console.log(`[Dashboard] Updated completion text: ${completionPercentage}%`);
             }
         }
 
         // Update statistics based on account type
+        console.log(`[Dashboard] Updating statistics for account type: ${userData.accountType}`);
         if (userData.accountType === 'student') {
             await updateStudentStats(userId);
-            // Update labels for student dashboard
             updateDashboardLabels('student');
         } else if (userData.accountType === 'employer') {
             await updateEmployerStats(userId);
-            // Update labels for employer dashboard
             updateDashboardLabels('employer');
         }
 
-        // Initialize activity chart
+        console.log('[Dashboard] Initializing activity chart');
         initializeActivityChart(userId, userData.accountType);
 
-        // Load recent activity
+        console.log('[Dashboard] Loading recent activity');
         await loadRecentActivity(userId);
 
     } catch (error) {
-        console.error('Error loading dashboard:', error);
+        console.error('[Dashboard] Error loading dashboard:', error);
     }
 });
 
-// Update dashboard labels based on user type
 function updateDashboardLabels(accountType) {
+    console.log(`[Dashboard] Updating dashboard labels for account type: ${accountType}`);
     const labels = {
         student: {
             profileViews: 'Profile Views',
@@ -93,17 +107,19 @@ function updateDashboardLabels(accountType) {
 
     const currentLabels = labels[accountType];
     
-    // Update the labels in the UI
     Object.keys(currentLabels).forEach(key => {
         const element = document.querySelector(`#${key}`);
         if (element && element.previousElementSibling) {
             element.previousElementSibling.textContent = currentLabels[key];
+            console.log(`[Dashboard] Updated ${key} label to: ${currentLabels[key]}`);
+        } else {
+            console.warn(`[Dashboard] Could not find element for ${key} label`);
         }
     });
 }
 
-// Calculate profile completion percentage
 function calculateProfileCompletion(userData) {
+    console.log('[Dashboard] Calculating profile completion');
     const requiredFields = {
         student: ['username', 'email', 'studentId', 'education', 'skills'],
         employer: ['username', 'email', 'companyName', 'companyPosition', 'companyDescription'],
@@ -112,49 +128,60 @@ function calculateProfileCompletion(userData) {
 
     const fields = requiredFields[userData.accountType] || [];
     const completedFields = fields.filter(field => userData[field]);
-    return Math.round((completedFields.length / fields.length) * 100);
+    const percentage = Math.round((completedFields.length / fields.length) * 100);
+    
+    console.log(`[Dashboard] Profile completion: ${percentage}% (${completedFields.length}/${fields.length} fields completed)`);
+    return percentage;
 }
 
-// Update student-specific statistics
 async function updateStudentStats(userId) {
+    console.log(`[Dashboard] Updating student stats for user: ${userId}`);
     try {
         const stats = await getDoc(doc(db, "statistics", userId));
         const data = stats.data() || {};
+        console.log('[Dashboard] Retrieved student statistics:', data);
 
         if (profileViews) profileViews.textContent = data.profileViews || 0;
         if (applicationsSent) applicationsSent.textContent = data.applicationsSent || 0;
         if (interviewsScheduled) interviewsScheduled.textContent = data.interviewsScheduled || 0;
         if (cvDownloads) cvDownloads.textContent = data.cvDownloads || 0;
+        
+        console.log('[Dashboard] Updated student statistics in UI');
     } catch (error) {
-        console.error('Error updating student stats:', error);
+        console.error('[Dashboard] Error updating student stats:', error);
     }
 }
 
-// Update employer-specific statistics
 async function updateEmployerStats(userId) {
+    console.log(`[Dashboard] Updating employer stats for user: ${userId}`);
     try {
         const stats = await getDoc(doc(db, "statistics", userId));
         const data = stats.data() || {};
+        console.log('[Dashboard] Retrieved employer statistics:', data);
 
-        // Update employer-specific UI elements
         if (profileViews) profileViews.textContent = data.companyViews || 0;
         if (applicationsSent) applicationsSent.textContent = data.applicationsReceived || 0;
         if (interviewsScheduled) interviewsScheduled.textContent = data.interviewsScheduled || 0;
         if (cvDownloads) cvDownloads.textContent = data.activeJobPostings || 0;
+        
+        console.log('[Dashboard] Updated employer statistics in UI');
     } catch (error) {
-        console.error('Error updating employer stats:', error);
+        console.error('[Dashboard] Error updating employer stats:', error);
     }
 }
 
-// Initialize activity chart
 function initializeActivityChart(userId, accountType) {
+    console.log(`[Dashboard] Initializing activity chart for user: ${userId}`);
     const ctx = document.getElementById('activityChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.warn('[Dashboard] Activity chart canvas not found');
+        return;
+    }
 
     const chartLabel = accountType === 'employer' ? 'Company Activity' : 'Profile Activity';
     const chartColor = '#006B3F'; // KFUPM green
 
-    // Sample data - replace with actual data from Firebase
+    console.log(`[Dashboard] Creating chart with label: ${chartLabel}`);
     const data = {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
         datasets: [{
@@ -185,11 +212,15 @@ function initializeActivityChart(userId, accountType) {
             }
         }
     });
+    console.log('[Dashboard] Activity chart initialized');
 }
 
-// Load recent activity
 async function loadRecentActivity(userId) {
-    if (!activityList) return;
+    console.log(`[Dashboard] Loading recent activity for user: ${userId}`);
+    if (!activityList) {
+        console.warn('[Dashboard] Activity list element not found');
+        return;
+    }
 
     try {
         const activitiesQuery = query(
@@ -199,11 +230,15 @@ async function loadRecentActivity(userId) {
             limit(5)
         );
 
+        console.log('[Dashboard] Fetching recent activities');
         const activities = await getDocs(activitiesQuery);
-        activityList.innerHTML = ''; // Clear existing activities
+        activityList.innerHTML = '';
 
+        console.log(`[Dashboard] Retrieved ${activities.size} activities`);
         activities.forEach(doc => {
             const activity = doc.data();
+            console.log('[Dashboard] Processing activity:', activity);
+            
             const activityElement = document.createElement('div');
             activityElement.className = 'flex items-center p-3 border-b border-gray-200';
             
@@ -221,14 +256,14 @@ async function loadRecentActivity(userId) {
         });
 
         if (activities.size === 0) {
+            console.log('[Dashboard] No activities found');
             activityList.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activity</p>';
         }
     } catch (error) {
-        console.error('Error loading activities:', error);
+        console.error('[Dashboard] Error loading activities:', error);
     }
 }
 
-// Helper function to get activity icon
 function getActivityIcon(type) {
     const icons = {
         'application': 'fas fa-paper-plane',
@@ -237,15 +272,21 @@ function getActivityIcon(type) {
         'cv': 'fas fa-file-alt',
         'default': 'fas fa-bell'
     };
-    return icons[type] || icons.default;
+    const icon = icons[type] || icons.default;
+    console.log(`[Dashboard] Getting icon for activity type ${type}: ${icon}`);
+    return icon;
 }
 
-// Helper function to format timestamp
 function formatTimestamp(timestamp) {
-    if (!timestamp) return '';
+    if (!timestamp) {
+        console.warn('[Dashboard] No timestamp provided for formatting');
+        return '';
+    }
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
+    const formatted = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
         Math.round((date - new Date()) / (1000 * 60 * 60 * 24)),
         'day'
     );
+    console.log(`[Dashboard] Formatted timestamp: ${formatted}`);
+    return formatted;
 }
