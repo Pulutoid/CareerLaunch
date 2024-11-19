@@ -1,0 +1,143 @@
+<!-- student-dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CareerLaunch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-gray-50" data-requires-auth="true">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="cv-builder.html" class="text-gray-600 hover:text-kfupm-500">CV Builder</a>
+                    <a href="job-search.html" class="text-gray-600 hover:text-kfupm-500">Job Search</a>
+                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Student Account</span>
+                    <span id="userDisplayName" class="text-gray-700"></span>
+                    <button onclick="logout()"
+                        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="userName">Student</span>!</h1>
+                    <p class="text-gray-600" id="studentId">Student ID: #</p>
+                </div>
+                <button onclick="editProfile()"
+                    class="px-4 py-2 text-sm text-kfupm-500 border border-kfupm-500 rounded-md hover:bg-kfupm-50">
+                    Edit Profile
+                </button>
+            </div>
+            <div id="profileCompletion" class="mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-kfupm-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <button onclick="createCV()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-file-alt text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Create CV</h3>
+                <p class="text-sm text-gray-600">Build your professional CV</p>
+            </button>
+
+            <button onclick="searchJobs()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-search text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">Find Jobs</h3>
+                <p class="text-sm text-gray-600">Browse available positions</p>
+            </button>
+
+            <button onclick="viewApplications()"
+                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-paper-plane text-kfupm-500 text-xl mb-2"></i>
+                <h3 class="font-semibold">My Applications</h3>
+                <p class="text-sm text-gray-600">Track your applications</p>
+            </button>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Profile Views</h3>
+                <p id="profileViews" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Applications Sent</h3>
+                <p id="applicationsSent" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">Interviews Scheduled</h3>
+                <p id="interviewsScheduled" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900">CV Downloads</h3>
+                <p id="cvDownloads" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            </div>
+        </div>
+
+        <!-- Job Applications -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">My Applications</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Applications will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activity Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Activity Overview</h2>
+            <div class="h-64">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-8">
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <div class="text-center text-gray-500">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/config/tailwind.config.js"></script>
+
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+
+</html>
