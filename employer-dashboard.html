@@ -1,3 +1,5 @@
+<!-- employers-dashboard.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -81,6 +83,8 @@
             </div>
         </div>
     </nav>
+    <div id="message"
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity duration-300 z-50"></div>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
         <!-- Company Profile Summary -->
@@ -105,8 +109,8 @@
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <button onclick="postNewJob()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-plus-circle text-kfupm-500 text-xl mb-2"></i>
+            <button id="postJobBtn" class="p-4 bg-white rounded-lg..."> <i
+                    class="fas fa-plus-circle text-kfupm-500 text-xl mb-2"></i>
                 <h3 class="font-semibold">Post New Job</h3>
                 <p class="text-sm text-gray-600">Create a new job listing</p>
             </button>
@@ -226,7 +230,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Job Title</label>
                                 <input type="text" id="jobTitle" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500 px-3 py-2 bg-white border">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Department</label>

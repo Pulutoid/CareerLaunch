@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let redirectUrl;
                 switch(userData.accountType) {
                     case 'student':
-                        redirectUrl = 'dashboard.html';
+                        redirectUrl = 'student-dashboard.html';
                         break;
                     case 'employer':
                         redirectUrl = 'employer-dashboard.html';
