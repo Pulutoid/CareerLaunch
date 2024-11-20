@@ -2,91 +2,228 @@
 import { auth, db, checkAuth } from './auth.js';
 import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
+
+
+// Debug utility
+function debugLog(message, data = null) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = `[${timestamp}] ${message}`;
+    console.log(logEntry, data);
+
+    const debugLog = document.getElementById('debugLog');
+    if (debugLog) {
+        debugLog.textContent += logEntry + '\n';
+        if (data) {
+            debugLog.textContent += JSON.stringify(data, null, 2) + '\n';
+        }
+        debugLog.textContent += '------------------------\n';
+        debugLog.scrollTop = debugLog.scrollHeight;
+    }
+}
+
+// Check Firestore connection
+async function checkFirestoreConnection() {
+    debugLog('Checking Firestore connection...');
+    try {
+        const testDoc = await getDoc(doc(db, "test", "test"));
+        debugLog('Firestore connection test:', { success: true });
+        return true;
+    } catch (error) {
+        debugLog('Firestore connection error:', {
+            error: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        return false;
+    }
+}
+
+// Test Firestore Access
+async function testFirestoreAccess() {
+    debugLog('🔍 Testing Firestore access...');
+
+    try {
+        // First, test if db is defined
+        if (!db) {
+            debugLog('❌ ERROR: Firebase db object is undefined');
+            return false;
+        }
+        debugLog('✓ Firebase db object exists');
+
+        // Try to write to a test collection
+        const testData = {
+            timestamp: new Date(),
+            test: 'test'
+        };
+
+        // Test write
+        debugLog('Attempting to write test document...');
+        const testRef = doc(db, 'test', 'test-doc');
+        await setDoc(testRef, testData);
+        debugLog('✓ Successfully wrote to Firestore');
+
+        // Test read
+        debugLog('Attempting to read test document...');
+        const testDoc = await getDoc(testRef);
+        if (testDoc.exists()) {
+            debugLog('✓ Successfully read from Firestore', testDoc.data());
+        } else {
+            debugLog('❌ Test document not found');
+            return false;
+        }
+
+        debugLog('✅ All Firestore tests passed');
+        return true;
+
+    } catch (error) {
+        debugLog('❌ Firestore test failed:', {
+            errorCode: error.code,
+            errorMessage: error.message,
+            fullError: error
+        });
+        return false;
+    }
+}
+
+
+// Update profile display
+function updateProfileDisplay(userData) {
+    debugLog('Updating profile display with user data', userData);
+
+    const elements = {
+        userName: document.getElementById('userName'),
+        studentId: document.getElementById('studentId'),
+        userMajor: document.getElementById('userMajor'),
+        userGPA: document.getElementById('userGPA'),
+        userSkills: document.getElementById('userSkills'),
+        userGradDate: document.getElementById('userGradDate')
+    };
+
+    // Log which elements were found
+    debugLog('Profile elements found:',
+        Object.fromEntries(
+            Object.entries(elements)
+                .map(([key, element]) => [key, !!element])
+        )
+    );
+
+    // Update each element if it exists
+    if (elements.userName) elements.userName.textContent = userData.username || 'Student';
+    if (elements.studentId) elements.studentId.textContent = `Student ID: ${userData.studentId || 'Not set'}`;
+    if (elements.userMajor) elements.userMajor.textContent = `Major: ${userData.major || 'Not set'}`;
+    if (elements.userGPA) elements.userGPA.textContent = `GPA: ${userData.gpa || 'Not set'}`;
+    if (elements.userSkills) elements.userSkills.textContent = `Skills: ${Array.isArray(userData.skills) ? userData.skills.join(', ') : 'None added'}`;
+    if (elements.userGradDate) elements.userGradDate.textContent = `Expected Graduation: ${userData.graduationDate || 'Not set'}`;
+
+    debugLog('Profile display updated');
+}
+
+
+
 console.log('[Dashboard] Initializing dashboard module');
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('[Dashboard] DOM Content Loaded, initializing dashboard');
-    
-    // Check authentication and redirect if needed
-    console.log('[Dashboard] Checking authentication');
-    checkAuth(['student', 'employer', 'admin']);
+    debugLog('Page loaded, initializing dashboard');
 
+    // Add debug panel toggle
+    const toggleDebug = document.getElementById('toggleDebug');
+    const debugPanel = document.getElementById('debugPanel');
+    if (toggleDebug && debugPanel) {
+        toggleDebug.addEventListener('click', () => {
+            debugPanel.classList.toggle('hidden');
+            toggleDebug.textContent = debugPanel.classList.contains('hidden')
+                ? 'Show Debug Info'
+                : 'Hide Debug Info';
+        });
+    }
+
+    // Get userId and validate
     const userId = localStorage.getItem('loggedInUserId');
     const accountType = localStorage.getItem('accountType');
-    console.log(`[Dashboard] User ID: ${userId}, Account Type: ${accountType}`);
+
+    debugLog('Checking user credentials', {
+        userIdFound: !!userId,
+        accountType: accountType
+    });
 
     if (!userId) {
-        console.warn('[Dashboard] No user ID found, redirecting to login');
+        debugLog('No user ID found in localStorage, redirecting to login');
         window.location.href = 'login.html';
         return;
     }
 
-    // Redirect admin users to admin dashboard
-    if (accountType === 'admin') {
-        console.log('[Dashboard] Admin user detected, redirecting to admin dashboard');
-        window.location.href = 'admin-dashboard.html';
+    // Check Firestore connection first
+    const isConnected = await checkFirestoreConnection();
+    if (!isConnected) {
+        debugLog('Failed to connect to Firestore, showing error message');
+        const debugLog = document.getElementById('debugLog');
+        if (debugLog) {
+            debugLog.textContent += "⚠️ Failed to connect to Firebase. Please check:\n";
+            debugLog.textContent += "1. Firebase config is correct\n";
+            debugLog.textContent += "2. Internet connection is stable\n";
+            debugLog.textContent += "3. Firebase project is active\n";
+        }
         return;
     }
 
-    // Initialize dashboard elements
-    console.log('[Dashboard] Initializing dashboard elements');
-    const userNameElement = document.getElementById('userName');
-    const profileViews = document.getElementById('profileViews');
-    const applicationsSent = document.getElementById('applicationsSent');
-    const interviewsScheduled = document.getElementById('interviewsScheduled');
-    const cvDownloads = document.getElementById('cvDownloads');
-    const activityList = document.getElementById('activityList');
-    const profileCompletion = document.getElementById('profileCompletion');
-
     try {
         // Fetch user data
-        console.log(`[Dashboard] Fetching user data for ID: ${userId}`);
-        const userDoc = await getDoc(doc(db, "users", userId));
+        debugLog(`Attempting to fetch user data`, { userId, accountType });
+        const userRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userRef);
+
+        if (!userDoc.exists()) {
+            debugLog('No user document found in Firestore', { userId });
+            document.getElementById('debugPanel').classList.remove('hidden');
+            return;
+        }
+
         const userData = userDoc.data();
-        console.log('[Dashboard] User data fetched:', { ...userData, password: '[REDACTED]' });
+        debugLog('User data fetched successfully', {
+            hasUsername: !!userData.username,
+            hasEmail: !!userData.email,
+            hasStudentId: !!userData.studentId,
+            fields: Object.keys(userData)
+        });
 
-        // Update username
-        if (userNameElement) {
-            userNameElement.textContent = userData.username;
-            console.log(`[Dashboard] Updated username display: ${userData.username}`);
-        }
+        // Update profile display
+        updateProfileDisplay(userData);
 
-        // Calculate and update profile completion
-        console.log('[Dashboard] Calculating profile completion');
+        // Update completion percentage
         const completionPercentage = calculateProfileCompletion(userData);
-        if (profileCompletion) {
-            const progressBar = profileCompletion.querySelector('.bg-kfupm-500');
-            if (progressBar) {
-                progressBar.style.width = `${completionPercentage}%`;
-                console.log(`[Dashboard] Updated progress bar width: ${completionPercentage}%`);
-            }
-            const percentageText = profileCompletion.querySelector('p');
-            if (percentageText) {
-                percentageText.textContent = `Profile completion: ${completionPercentage}%`;
-                console.log(`[Dashboard] Updated completion text: ${completionPercentage}%`);
-            }
+        const progressBar = document.querySelector('#profileCompletion .bg-kfupm-500');
+        const percentageText = document.querySelector('#profileCompletion p');
+
+        if (progressBar) {
+            progressBar.style.width = `${completionPercentage}%`;
+            debugLog('Updated progress bar', { completionPercentage });
+        }
+        if (percentageText) {
+            percentageText.textContent = `Profile completion: ${completionPercentage}%`;
         }
 
-        // Update statistics based on account type
-        console.log(`[Dashboard] Updating statistics for account type: ${userData.accountType}`);
-        if (userData.accountType === 'student') {
+        // Update stats
+        if (accountType === 'student') {
             await updateStudentStats(userId);
-            updateDashboardLabels('student');
-        } else if (userData.accountType === 'employer') {
-            await updateEmployerStats(userId);
-            updateDashboardLabels('employer');
         }
 
-        console.log('[Dashboard] Initializing activity chart');
-        initializeActivityChart(userId, userData.accountType);
+        // Initialize activity chart
+        initializeActivityChart(userId, accountType);
 
-        console.log('[Dashboard] Loading recent activity');
+        // Load recent activity
         await loadRecentActivity(userId);
 
     } catch (error) {
-        console.error('[Dashboard] Error loading dashboard:', error);
+        debugLog('Error loading dashboard:', {
+            error: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        // Show debug panel automatically when there's an error
+        document.getElementById('debugPanel').classList.remove('hidden');
     }
 });
+
 
 function updateDashboardLabels(accountType) {
     console.log(`[Dashboard] Updating dashboard labels for account type: ${accountType}`);
@@ -106,7 +243,7 @@ function updateDashboardLabels(accountType) {
     };
 
     const currentLabels = labels[accountType];
-    
+
     Object.keys(currentLabels).forEach(key => {
         const element = document.querySelector(`#${key}`);
         if (element && element.previousElementSibling) {
@@ -129,7 +266,7 @@ function calculateProfileCompletion(userData) {
     const fields = requiredFields[userData.accountType] || [];
     const completedFields = fields.filter(field => userData[field]);
     const percentage = Math.round((completedFields.length / fields.length) * 100);
-    
+
     console.log(`[Dashboard] Profile completion: ${percentage}% (${completedFields.length}/${fields.length} fields completed)`);
     return percentage;
 }
@@ -145,7 +282,7 @@ async function updateStudentStats(userId) {
         if (applicationsSent) applicationsSent.textContent = data.applicationsSent || 0;
         if (interviewsScheduled) interviewsScheduled.textContent = data.interviewsScheduled || 0;
         if (cvDownloads) cvDownloads.textContent = data.cvDownloads || 0;
-        
+
         console.log('[Dashboard] Updated student statistics in UI');
     } catch (error) {
         console.error('[Dashboard] Error updating student stats:', error);
@@ -163,7 +300,7 @@ async function updateEmployerStats(userId) {
         if (applicationsSent) applicationsSent.textContent = data.applicationsReceived || 0;
         if (interviewsScheduled) interviewsScheduled.textContent = data.interviewsScheduled || 0;
         if (cvDownloads) cvDownloads.textContent = data.activeJobPostings || 0;
-        
+
         console.log('[Dashboard] Updated employer statistics in UI');
     } catch (error) {
         console.error('[Dashboard] Error updating employer stats:', error);
@@ -216,13 +353,16 @@ function initializeActivityChart(userId, accountType) {
 }
 
 async function loadRecentActivity(userId) {
-    console.log(`[Dashboard] Loading recent activity for user: ${userId}`);
+    debugLog('Loading recent activity...');
+
+    const activityList = document.getElementById('applicationsTable');
     if (!activityList) {
-        console.warn('[Dashboard] Activity list element not found');
+        debugLog('⚠️ Activity list element (applicationsTable) not found in DOM');
         return;
     }
 
     try {
+        debugLog('Querying activities collection...');
         const activitiesQuery = query(
             collection(db, "activities"),
             where("userId", "==", userId),
@@ -230,39 +370,67 @@ async function loadRecentActivity(userId) {
             limit(5)
         );
 
-        console.log('[Dashboard] Fetching recent activities');
         const activities = await getDocs(activitiesQuery);
         activityList.innerHTML = '';
 
-        console.log(`[Dashboard] Retrieved ${activities.size} activities`);
-        activities.forEach(doc => {
-            const activity = doc.data();
-            console.log('[Dashboard] Processing activity:', activity);
-            
-            const activityElement = document.createElement('div');
-            activityElement.className = 'flex items-center p-3 border-b border-gray-200';
-            
-            activityElement.innerHTML = `
-                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-kfupm-100 flex items-center justify-center">
-                    <i class="text-kfupm-500 ${getActivityIcon(activity.type)}"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-900">${activity.description}</p>
-                    <p class="text-sm text-gray-500">${formatTimestamp(activity.timestamp)}</p>
-                </div>
-            `;
-
-            activityList.appendChild(activityElement);
-        });
+        debugLog(`Found ${activities.size} activities`);
 
         if (activities.size === 0) {
-            console.log('[Dashboard] No activities found');
-            activityList.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activity</p>';
+            debugLog('No activities found, displaying empty message');
+            activityList.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        No applications yet
+                    </td>
+                </tr>`;
+            return;
         }
+
+        activities.forEach(doc => {
+            const activity = doc.data();
+            debugLog('Processing activity:', activity);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${activity.company || 'N/A'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${activity.position || 'N/A'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${formatTimestamp(activity.timestamp) || 'N/A'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        ${activity.status || 'Pending'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button class="text-kfupm-500 hover:text-kfupm-600">
+                        View Details
+                    </button>
+                </td>
+            `;
+            activityList.appendChild(row);
+        });
+
     } catch (error) {
-        console.error('[Dashboard] Error loading activities:', error);
+        debugLog('Error loading activities:', {
+            error: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        activityList.innerHTML = `
+            <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-red-500">
+                    Error loading applications
+                </td>
+            </tr>`;
     }
 }
+
+
 
 function getActivityIcon(type) {
     const icons = {
