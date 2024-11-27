@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- 
+    Version: 1.3
+    Last Updated: March 2024
+    Features:
+    - Enhanced academic styling
+    - Navy and gold color scheme
+    - Improved typography
+    - Preserved all functionality
+-->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
     <title>Academic Dashboard - CareerLaunch</title>
-=======
-    <title>Student Dashboard - CareerLaunch</title>
-    <!-- Add Tailwind directly with configuration -->
->>>>>>> be87b5b20b0c83e7ca1273ce75876615c799cd1c
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -17,17 +21,12 @@
                 extend: {
                     colors: {
                         'academic': {
-                            primary: '#1B3764',    // Navy blue for main elements
-                            secondary: '#8B4513',   // Rich brown for accents
-                            tertiary: '#c47900',    // Classic gold
+                            primary: '#1B3764',    // Navy blue
+                            secondary: '#8B4513',   // Brown accent
+                            tertiary: '#e8ad09',    // Gold accent
                             light: '#F5F5F5',      // Light background
                             dark: '#0A1F3D',       // Darker navy
-                            warm: '#c47900'        // Bright gold for highlights
-                        },
-                        'kfupm': {
-                            100: '#dcfce7',
-                            500: '#006B3F',
-                            600: '#005a35',
+                            warm: '#FFD700'        // Bright gold
                         }
                     },
                     fontFamily: {
@@ -46,7 +45,7 @@
 </head>
 
 <body class="min-h-screen bg-academic-light" data-requires-auth="true">
-    <!-- Debug Panel (unchanged) -->
+    <!-- Debug Panel -->
     <div id="debugPanel"
         class="hidden mb-4 p-4 bg-yellow-100 rounded text-xs fixed top-0 right-0 m-4 max-w-lg max-h-screen overflow-auto z-50">
         <div class="flex justify-between items-center mb-2">
@@ -56,7 +55,6 @@
         <pre id="debugLog" class="whitespace-pre-wrap"></pre>
     </div>
 
-    <!-- Navigation -->
     <nav class="bg-academic-primary text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex justify-between h-20">
@@ -65,7 +63,6 @@
                         <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
                     </a>
                 </div>
-<<<<<<< HEAD
                 <div class="flex items-center space-x-8">
                     <a href="cv-builder.html"
                         class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">CV
@@ -77,15 +74,8 @@
                         class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Student
                         Account</span>
                     <span id="userDisplayName" class="text-academic-light font-medium"></span>
-=======
-                <div class="flex items-center space-x-4">
-                    <a href="cv-builder.html" class="text-gray-600 hover:text-kfupm-500">CV Builder</a>
-                    <a href="job-board.html" class="text-gray-600 hover:text-kfupm-500">Job Board</a> <span
-                        class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Student Account</span>
-                    <span id="userDisplayName" class="text-gray-700"></span>
->>>>>>> be87b5b20b0c83e7ca1273ce75876615c799cd1c
                     <button onclick="logout()"
-                        class="px-4 py-2 text-academic-tertiary border border-academic-tertiary/50 rounded-md hover:bg-academic-tertiary/10 transition-colors">
+                        class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
                         Logout
                     </button>
                 </div>
@@ -133,7 +123,7 @@
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             <button onclick="createCV()"
-                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/5 transition-all">
+                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
                 <i class="fas fa-file-alt text-academic-tertiary text-2xl mb-3"></i>
                 <h3
                     class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
@@ -142,7 +132,7 @@
             </button>
 
             <button onclick="searchJobs()"
-                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/5 transition-all">
+                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
                 <i class="fas fa-search text-academic-tertiary text-2xl mb-3"></i>
                 <h3
                     class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
@@ -151,7 +141,7 @@
             </button>
 
             <button onclick="viewApplications()"
-                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/5 transition-all">
+                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
                 <i class="fas fa-paper-plane text-academic-tertiary text-2xl mb-3"></i>
                 <h3
                     class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">

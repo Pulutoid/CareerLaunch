@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Builder - CareerLaunch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'academic': {
+                            primary: '#1B3764',    // Navy blue
+                            secondary: '#8B4513',   // Brown accent
+                            tertiary: '#e8ad09',    // Gold accent
+                            light: '#F5F5F5',      // Light background
+                            dark: '#0A1F3D',       // Darker navy
+                            warm: '#FFD700'        // Bright gold
+                        }
+                    },
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="min-h-screen bg-academic-light" data-requires-auth="true">
+    <!-- Message display -->
+    <div id="message"
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 opacity-0 transition-opacity duration-300"></div>
+
+    <!-- Debug Panel -->
+    <div id="debugPanel" class="hidden fixed top-0 right-0 m-4 p-4 bg-white rounded-lg shadow-lg max-w-md z-50">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="font-bold">Debug Info</h3>
+            <button id="clearDebug" class="text-xs text-red-500 hover:text-red-700">Clear</button>
+        </div>
+        <pre id="debugLog" class="text-xs whitespace-pre-wrap"></pre>
+    </div>
+
+    <nav class="bg-academic-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between h-20">
+                <div class="flex items-center">
+                    <a href="home.html" class="text-2xl font-serif font-bold">
+                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-8">
+                    <button id="toggleDebug" class="text-sm text-academic-tertiary/80 hover:text-academic-tertiary">
+                        <i class="fas fa-bug mr-2"></i>Debug Info
+                    </button>
+                    <a href="dashboard.html" class="text-academic-light hover:text-academic-tertiary transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </a>
+                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Step Progress -->
+        <div class="mb-8">
+            <div class="flex justify-between">
+                <div class="w-full flex items-center">
+                    <div class="relative flex-1">
+                        <div class="h-1 bg-academic-tertiary"></div>
+                        <div class="absolute -top-2 left-0">
+                            <div class="bg-academic-tertiary rounded-full h-5 w-5 flex items-center justify-center">
+                                <span class="text-white text-xs">1</span>
+                            </div>
+                            <span
+                                class="absolute top-6 -left-4 text-sm text-academic-primary font-medium">Template</span>
+                        </div>
+                    </div>
+                    <div class="relative flex-1">
+                        <div class="h-1 bg-gray-200" id="step2Bar"></div>
+                        <div class="absolute -top-2 left-1/2 -translate-x-1/2">
+                            <div class="bg-gray-200 rounded-full h-5 w-5 flex items-center justify-center"
+                                id="step2Circle">
+                                <span class="text-gray-600 text-xs">2</span>
+                            </div>
+                            <span class="absolute top-6 -left-8 text-sm text-gray-500 font-medium">Information</span>
+                        </div>
+                    </div>
+                    <div class="relative flex-1">
+                        <div class="h-1 bg-gray-200" id="step3Bar"></div>
+                        <div class="absolute -top-2 right-0">
+                            <div class="bg-gray-200 rounded-full h-5 w-5 flex items-center justify-center"
+                                id="step3Circle">
+                                <span class="text-gray-600 text-xs">3</span>
+                            </div>
+                            <span class="absolute top-6 -right-4 text-sm text-gray-500 font-medium">Preview</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Selection -->
+        <div id="templateStep" class="mb-8">
+            <h2 class="text-2xl font-serif font-bold text-academic-primary mb-6">Choose Your Template</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Professional Template -->
+                <div class="template-card cursor-pointer bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-academic-tertiary transition-all"
+                    data-template="professional">
+                    <div class="mb-4 bg-gray-100 p-4 rounded">
+                        <div class="h-8 w-3/4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 w-1/2 bg-gray-500 rounded mb-4"></div>
+                        <div class="space-y-1">
+                            <div class="h-3 w-1/3 bg-gray-400 rounded"></div>
+                            <div class="h-3 w-1/4 bg-gray-400 rounded"></div>
+                        </div>
+                    </div>
+                    <h3 class="font-serif text-lg font-semibold text-academic-primary">Professional</h3>
+                    <p class="text-sm text-gray-600 mt-2">Clean, modern design with structured sections</p>
+                </div>
+
+                <!-- Academic Template -->
+                <div class="template-card cursor-pointer bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-academic-tertiary transition-all"
+                    data-template="academic">
+                    <div class="mb-4 border-b-2 border-academic-primary pb-4">
+                        <div class="h-8 w-3/4 bg-academic-primary rounded mb-2"></div>
+                        <div class="h-4 w-1/2 bg-academic-tertiary rounded mb-4"></div>
+                        <div class="space-y-1">
+                            <div class="h-3 w-1/3 bg-gray-400 rounded"></div>
+                            <div class="h-3 w-1/4 bg-gray-400 rounded"></div>
+                        </div>
+                    </div>
+                    <h3 class="font-serif text-lg font-semibold text-academic-primary">Academic</h3>
+                    <p class="text-sm text-gray-600 mt-2">Perfect for research and educational positions</p>
+                </div>
+
+                <!-- Creative Template -->
+                <div class="template-card cursor-pointer bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-academic-tertiary transition-all"
+                    data-template="creative">
+                    <div class="mb-4 bg-academic-tertiary p-4 rounded">
+                        <div class="h-8 w-3/4 bg-white rounded mb-2"></div>
+                        <div class="h-4 w-1/2 bg-white/80 rounded mb-4"></div>
+                        <div class="space-y-1">
+                            <div class="h-3 w-1/3 bg-white/60 rounded"></div>
+                            <div class="h-3 w-1/4 bg-white/60 rounded"></div>
+                        </div>
+                    </div>
+                    <h3 class="font-serif text-lg font-semibold text-academic-primary">Creative</h3>
+                    <p class="text-sm text-gray-600 mt-2">Stand out with a modern, bold layout</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Form (initially hidden) -->
+        <div id="informationStep" class="hidden">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Preview Step (initially hidden) -->
+        <div id="finishStep" class="hidden">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8">
+            <button id="prevBtn"
+                class="hidden px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>Previous
+            </button>
+            <button id="nextBtn"
+                class="px-6 py-2.5 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
+                Next<i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </main>
+
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/cv-builder.js"></script>
+    <!-- Add these in the head section -->
+
+</body>
+
+</html>
