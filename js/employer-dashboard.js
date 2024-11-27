@@ -4,6 +4,7 @@ import {
     doc, getDoc, collection, getDocs,
     query, where, orderBy, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { initializeJobPosting } from './job-posting.js';
 
 // Debug utilities
 const DEBUG = true;
@@ -25,6 +26,7 @@ function debugLog(message, data = null) {
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
     debugLog('🚀 Initializing employer dashboard');
+    initializeJobPosting();
 
     // Debug panel toggle
     const toggleDebug = document.getElementById('toggleDebug');
@@ -162,52 +164,54 @@ async function loadEmployerStats(employerId) {
 }
 
 async function loadJobListings(employerId) {
-    debugLog('Loading job listings');
+    debugLog('📜 Loading job listings - simple version');
 
     const table = document.getElementById('jobListingsTable');
     if (!table) return;
 
+    table.innerHTML = `<tr><td colspan="5" class="text-center p-4">Loading...</td></tr>`;
+
     try {
-        const jobsQuery = query(
-            collection(db, "jobs"),
-            where("employerId", "==", employerId),
-            orderBy("createdAt", "desc")
-        );
+        // Super simple query - just get all jobs for this employer
+        const querySnapshot = await getDocs(collection(db, "jobs"));
+        debugLog('Got jobs from Firebase:', querySnapshot.size);
 
-        const jobSnapshots = await getDocs(jobsQuery);
-        table.innerHTML = '';
+        let jobs = [];
+        querySnapshot.forEach(doc => {
+            jobs.push({ id: doc.id, ...doc.data() });
+        });
 
-        if (jobSnapshots.empty) {
-            table.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                        No job listings yet
-                    </td>
-                </tr>`;
+        // Sort on client side - much simpler!
+        jobs.sort((a, b) => b.createdAt - a.createdAt);
+
+        debugLog('Processed jobs:', jobs);
+
+        if (jobs.length === 0) {
+            table.innerHTML = `<tr><td colspan="5" class="text-center p-4">No jobs found</td></tr>`;
             return;
         }
 
-        jobSnapshots.forEach(doc => {
-            const job = doc.data();
+        table.innerHTML = '';
+        jobs.forEach(job => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap">
-                    ${job.title}
+                    <div class="text-sm font-medium text-gray-900">${job.title}</div>
+                    <div class="text-sm text-gray-500">${job.department || ''}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     ${formatDate(job.createdAt)}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap text-center">
                     ${job.applications?.length || 0}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusStyle(job.status)}">
                         ${job.status}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onclick="viewJobDetails('${doc.id}')" 
+                    <button onclick="viewJobDetails('${job.id}')" 
                         class="text-kfupm-500 hover:text-kfupm-600">
                         View Details
                     </button>
@@ -216,17 +220,12 @@ async function loadJobListings(employerId) {
             table.appendChild(row);
         });
 
-        debugLog('Job listings loaded successfully');
     } catch (error) {
-        debugLog('Error loading job listings', error);
-        table.innerHTML = `
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-red-500">
-                    Error loading job listings
-                </td>
-            </tr>`;
+        debugLog('❌ Error loading jobs:', error);
+        table.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-red-500">Error loading jobs</td></tr>`;
     }
 }
+
 
 async function loadRecentApplications(employerId) {
     debugLog('Loading recent applications');
@@ -316,19 +315,27 @@ function initializeApplicationTrendsChart(employerId) {
 }
 
 function setupEventListeners() {
+    debugLog('🎯 Setting up event listeners');
+    
     // Post new job button
-    document.querySelector('button[onclick="postNewJob()"]')?.addEventListener('click', () => {
-        showJobModal();
-    });
-
-    // Filter buttons
-    document.querySelectorAll('button[onclick^="filterJobs"]').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const filter = e.target.getAttribute('onclick').match(/'(.+)'/)[1];
-            filterJobListings(filter);
+    const postJobBtn = document.getElementById('postJobBtn');
+    if (postJobBtn) {
+        debugLog('Found post job button, adding listener');
+        postJobBtn.addEventListener('click', () => {
+            if (typeof window.showJobModal === 'function') {
+                window.showJobModal();
+            } else {
+                debugLog('❌ showJobModal function not found');
+            }
         });
-    });
+    } else {
+        debugLog('❌ Post job button not found');
+    }
+
+    // Filter buttons (your existing code)
+    // ...
 }
+
 
 // Utility functions
 function formatDate(timestamp) {
@@ -350,4 +357,35 @@ function filterJobListings(filter) {
 export {
     loadJobListings,
     filterJobListings
+};
+
+function getStatusStyle(status) {
+    const styles = {
+        active: 'bg-green-100 text-green-800',
+        inactive: 'bg-yellow-100 text-yellow-800',
+        expired: 'bg-red-100 text-red-800',
+        default: 'bg-gray-100 text-gray-800'
+    };
+    return styles[status] || styles.default;
+}
+
+// Add this as a window function so it can be called from HTML
+window.toggleJobStatus = async (jobId, currentStatus) => {
+    debugLog('🔄 Toggling job status', { jobId, currentStatus });
+    
+    try {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        await updateDoc(doc(db, "jobs", jobId), {
+            status: newStatus,
+            lastUpdated: serverTimestamp()
+        });
+        
+        // Refresh the listings
+        const employerId = localStorage.getItem('loggedInUserId');
+        await loadJobListings(employerId, 'all');
+        
+        debugLog('✅ Job status updated successfully');
+    } catch (error) {
+        debugLog('❌ Error toggling job status', error);
+    }
 };
