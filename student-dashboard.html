@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- 
-    Version: 1.2
-    Last Updated: March 2024
-    Features:
-    - Enhanced debug panel
-    - Consistent styling with edit-profile
-    - Improved button layout
-    - Visual feedback
--->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - CareerLaunch</title>
-    <!-- Add Tailwind directly with configuration -->
+    <title>Academic Dashboard - CareerLaunch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
+                        'academic': {
+                            primary: '#1B3764',    // Navy blue for main elements
+                            secondary: '#8B4513',   // Rich brown for accents
+                            tertiary: '#c47900',    // Classic gold
+                            light: '#F5F5F5',      // Light background
+                            dark: '#0A1F3D',       // Darker navy
+                            warm: '#c47900'        // Bright gold for highlights
+                        },
                         'kfupm': {
                             100: '#dcfce7',
                             500: '#006B3F',
                             600: '#005a35',
                         }
+                    },
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
                     }
                 }
             }
@@ -33,11 +35,13 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 </head>
 
-
-<body class="min-h-screen bg-gray-50" data-requires-auth="true">
-    <!-- Debug Panel -->
+<body class="min-h-screen bg-academic-light" data-requires-auth="true">
+    <!-- Debug Panel (unchanged) -->
     <div id="debugPanel"
         class="hidden mb-4 p-4 bg-yellow-100 rounded text-xs fixed top-0 right-0 m-4 max-w-lg max-h-screen overflow-auto z-50">
         <div class="flex justify-between items-center mb-2">
@@ -47,116 +51,147 @@
         <pre id="debugLog" class="whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
+    <!-- Navigation -->
+    <nav class="bg-academic-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                    <a href="home.html" class="text-2xl font-serif font-bold">
+                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                    </a>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="cv-builder.html" class="text-gray-600 hover:text-kfupm-500">CV Builder</a>
-                    <a href="job-search.html" class="text-gray-600 hover:text-kfupm-500">Job Search</a>
-                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Student Account</span>
-                    <span id="userDisplayName" class="text-gray-700"></span>
+                <div class="flex items-center space-x-8">
+                    <a href="cv-builder.html"
+                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">CV
+                        Builder</a>
+                    <a href="job-search.html"
+                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Job
+                        Search</a>
+                    <span
+                        class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Student
+                        Account</span>
+                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
                     <button onclick="logout()"
-                        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
+                        class="px-4 py-2 text-academic-tertiary border border-academic-tertiary/50 rounded-md hover:bg-academic-tertiary/10 transition-colors">
+                        Logout
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-6 py-12">
         <!-- Welcome Section -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="userName">Student</span>!</h1>
-                    <p class="text-gray-600" id="studentId">Student ID: Loading...</p>
-                    <div class="mt-2 space-y-1">
+                    <h1 class="text-3xl font-serif font-bold text-academic-primary mb-2">Welcome, <span id="userName"
+                            class="text-academic-tertiary">Student</span></h1>
+                    <p class="text-gray-600 font-medium" id="studentId">Student ID: Loading...</p>
+                    <div class="mt-4 space-y-2">
                         <p class="text-gray-600" id="userMajor">Major: Loading...</p>
                         <p class="text-gray-600" id="userGPA">GPA: Loading...</p>
                         <p class="text-gray-600" id="userSkills">Skills: Loading...</p>
                         <p class="text-gray-600" id="userGradDate">Expected Graduation: Loading...</p>
                     </div>
                 </div>
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-3">
                     <a href="edit-student-profile.html"
-                        class="inline-flex items-center justify-center bg-kfupm-500 text-white px-4 py-2 rounded-md hover:bg-kfupm-600 focus:outline-none focus:ring focus:ring-kfupm-200">
+                        class="inline-flex items-center justify-center bg-academic-primary text-white px-6 py-2.5 rounded-lg hover:bg-academic-dark transition-colors">
                         <i class="fas fa-user-edit mr-2"></i>
                         Edit Profile
                     </a>
                     <button id="toggleDebug"
-                        class="inline-flex items-center justify-center text-gray-500 hover:text-kfupm-500 text-sm">
+                        class="inline-flex items-center justify-center text-gray-500 hover:text-academic-tertiary text-sm">
                         <i class="fas fa-bug mr-2"></i>
                         Debug Info
                     </button>
                 </div>
             </div>
-            <div id="profileCompletion" class="mt-4">
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-kfupm-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            <div id="profileCompletion" class="mt-6">
+                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                    <div class="bg-academic-tertiary h-2.5 rounded-full transition-all duration-500" style="width: 0%">
+                    </div>
                 </div>
                 <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
             </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <button onclick="createCV()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-file-alt text-kfupm-500 text-xl mb-2"></i>
-                <h3 class="font-semibold">Create CV</h3>
-                <p class="text-sm text-gray-600">Build your professional CV</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            <button onclick="createCV()"
+                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/5 transition-all">
+                <i class="fas fa-file-alt text-academic-tertiary text-2xl mb-3"></i>
+                <h3
+                    class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
+                    Create CV</h3>
+                <p class="text-sm text-gray-600 mt-2">Build your professional CV</p>
             </button>
 
-            <button onclick="searchJobs()" class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-search text-kfupm-500 text-xl mb-2"></i>
-                <h3 class="font-semibold">Find Jobs</h3>
-                <p class="text-sm text-gray-600">Browse available positions</p>
+            <button onclick="searchJobs()"
+                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/5 transition-all">
+                <i class="fas fa-search text-academic-tertiary text-2xl mb-3"></i>
+                <h3
+                    class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
+                    Find Jobs</h3>
+                <p class="text-sm text-gray-600 mt-2">Browse available positions</p>
             </button>
 
             <button onclick="viewApplications()"
-                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-paper-plane text-kfupm-500 text-xl mb-2"></i>
-                <h3 class="font-semibold">My Applications</h3>
-                <p class="text-sm text-gray-600">Track your applications</p>
+                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/5 transition-all">
+                <i class="fas fa-paper-plane text-academic-tertiary text-2xl mb-3"></i>
+                <h3
+                    class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
+                    My Applications</h3>
+                <p class="text-sm text-gray-600 mt-2">Track your applications</p>
             </button>
         </div>
 
         <!-- Statistics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Profile Views</h3>
-                <p id="profileViews" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-serif font-semibold text-academic-primary">Profile Views</h3>
+                <p id="profileViews" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Applications Sent</h3>
-                <p id="applicationsSent" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-serif font-semibold text-academic-primary">Applications Sent</h3>
+                <p id="applicationsSent" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Interviews Scheduled</h3>
-                <p id="interviewsScheduled" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-serif font-semibold text-academic-primary">Interviews Scheduled</h3>
+                <p id="interviewsScheduled" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">CV Downloads</h3>
-                <p id="cvDownloads" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-serif font-semibold text-academic-primary">CV Downloads</h3>
+                <p id="cvDownloads" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
         </div>
 
         <!-- Job Applications -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">My Applications</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
+            <h2 class="text-xl font-serif font-bold text-academic-primary mb-6">My Applications</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-academic-warm/5">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-academic-primary uppercase tracking-wider">
+                                Company</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-academic-primary uppercase tracking-wider">
+                                Position</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-academic-primary uppercase tracking-wider">
+                                Applied On</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-academic-primary uppercase tracking-wider">
+                                Status</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-academic-primary uppercase tracking-wider">
+                                Actions</th>
                         </tr>
                     </thead>
                     <tbody id="applicationsTable" class="bg-white divide-y divide-gray-200">
@@ -167,17 +202,17 @@
         </div>
 
         <!-- Activity Chart -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Activity Overview</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <h2 class="text-xl font-serif font-bold text-academic-primary mb-6">Activity Overview</h2>
             <div class="h-64">
                 <canvas id="activityChart"></canvas>
             </div>
         </div>
     </main>
 
-    <footer class="bg-white mt-8">
-        <div class="max-w-7xl mx-auto py-6 px-4">
-            <div class="text-center text-gray-500">
+    <footer class="bg-academic-primary text-white mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-6">
+            <div class="text-center text-academic-tertiary/90">
                 © 2024 CareerLaunch - KFUPM. All rights reserved.
             </div>
         </div>

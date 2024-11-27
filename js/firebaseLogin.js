@@ -7,7 +7,7 @@ console.log('[Login] Initializing Firebase login module');
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[Login] DOM Content Loaded, initializing login form');
-    
+
     const loginForm = document.getElementById('login-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -23,15 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleLoginSuccess(user) {
         console.log('[Login] Login successful, processing user data', { userId: user.uid, email: user.email });
-        
+
         try {
             console.log('[Login] Fetching user document from Firestore');
             const userDoc = await getDoc(doc(db, "users", user.uid));
             const userData = userDoc.data();
-            console.log('[Login] User data retrieved:', { 
+            console.log('[Login] User data retrieved:', {
                 accountType: userData.accountType,
                 username: userData.username,
-                uid: user.uid 
+                uid: user.uid
             });
 
             // Store user data in localStorage
@@ -44,23 +44,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             showMessage('loginMessage', 'Login successful! Redirecting...', 'success');
-            
+
             // Route based on account type
             console.log(`[Login] Determining redirect for account type: ${userData.accountType}`);
             setTimeout(() => {
                 let redirectUrl;
-                switch(userData.accountType) {
+                switch (userData.accountType) {
                     case 'student':
-                        redirectUrl = 'dashboard.html';
+                        redirectUrl = 'student-dashboard.html';
                         break;
                     case 'employer':
-                        redirectUrl = 'employer-dashboard.html';
+                        redirectUrl = 'employer-student-dashboard.html';
                         break;
                     case 'admin':
-                        redirectUrl = 'admin-dashboard.html';
+                        redirectUrl = 'admin-student-dashboard.html';
                         break;
                     default:
-                        redirectUrl = 'dashboard.html';
+                        redirectUrl = 'student-dashboard.html';
                 }
                 console.log(`[Login] Redirecting to: ${redirectUrl}`);
                 window.location.href = redirectUrl;
@@ -74,13 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleLogin(event) {
         event.preventDefault();
         console.log('[Login] Login attempt initiated');
-        
+
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
-        console.log('[Login] Validating login inputs:', { 
-            emailProvided: !!email, 
-            passwordProvided: !!password 
+        console.log('[Login] Validating login inputs:', {
+            emailProvided: !!email,
+            passwordProvided: !!password
         });
 
         if (!email || !password) {
@@ -95,9 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[Login] Firebase authentication successful');
             await handleLoginSuccess(userCredential.user);
         } catch (error) {
-            console.error('[Login] Authentication error:', { 
-                code: error.code, 
-                message: error.message 
+            console.error('[Login] Authentication error:', {
+                code: error.code,
+                message: error.message
             });
 
             const errorMessages = {
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handlePasswordReset(email) {
         console.log('[Login] Password reset requested for email:', email);
-        
+
         try {
             console.log('[Login] Sending password reset email');
             await sendPasswordResetEmail(auth, email);
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         forgotPasswordLink.addEventListener('click', async (event) => {
             event.preventDefault();
             console.log('[Login] Forgot password link clicked');
-            
+
             const email = emailInput.value.trim();
             console.log('[Login] Checking email field for reset:', { emailProvided: !!email });
 
