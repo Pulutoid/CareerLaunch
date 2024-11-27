@@ -331,8 +331,8 @@ function loadPreview() {
                     <button onclick="downloadCV('pdf')" class="px-4 py-2 bg-academic-tertiary text-white rounded-lg hover:bg-academic-tertiary/90 transition-colors">
                         <i class="fas fa-file-pdf mr-2"></i>Download PDF
                     </button>
-<button onclick="downloadCV('word')" class="px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
-                        <i class="fas fa-file-word mr-2"></i>Download Word
+                    <button onclick="downloadCV('png')" class="px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
+                        <i class="fas fa-file-image mr-2"></i>Download PNG
                     </button>
                 </div>
             </div>
@@ -412,115 +412,133 @@ function addExperienceField() {
 
 function generateEducationHTML() {
     if (!cvData.education || cvData.education.length === 0) {
-        return '<p class="text-gray-500">No education entries yet</p>';
+        return '<p class="text-gray-600">No education entries yet</p>';
     }
 
     return cvData.education.map(edu => `
-        <div class="mb-4">
-            <h3 class="font-bold">${edu.degree || 'Degree'}</h3>
-            <p class="text-academic-primary">${edu.institution || 'Institution'}</p>
-            <div class="flex justify-between text-sm text-gray-600">
-                <span>${edu.gradYear || 'Year'}</span>
-                <span>GPA: ${edu.gpa || 'N/A'}</span>
-            </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">${edu.degree || 'Degree'}</h3>
+        <p class="text-gray-600">${edu.institution || 'Institution'}</p>
+        <div class="flex justify-between text-sm text-gray-500">
+          <span>${edu.gradYear || 'Year'}</span>
+          <span>GPA: ${edu.gpa || 'N/A'}</span>
         </div>
+      </div>
     `).join('');
 }
 
+
 function generateExperienceHTML() {
     if (!cvData.experience || cvData.experience.length === 0) {
-        return '<p class="text-gray-500">No experience entries yet</p>';
+        return '<p class="text-gray-600">No experience entries yet</p>';
     }
 
     return cvData.experience.map(exp => `
-        <div class="mb-4">
-            <h3 class="font-bold">${exp.position || 'Position'}</h3>
-            <p class="text-academic-primary">${exp.company || 'Company'}</p>
-            <p class="text-sm text-gray-600">${exp.duration || 'Duration'}</p>
-            <p class="mt-2">${exp.description || 'Description'}</p>
-        </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">${exp.position || 'Position'}</h3>
+        <p class="text-gray-600">${exp.company || 'Company'}</p>
+        <p class="text-sm text-gray-500">${exp.duration || 'Duration'}</p>
+        <p class="mt-2 text-gray-700">${exp.description || 'Description'}</p>
+      </div>
     `).join('');
 }
 
 function generateSkillsHTML() {
     if (!cvData.skills || cvData.skills.length === 0) {
-        return '<p class="text-gray-500">No skills listed yet</p>';
+        return '<p class="text-gray-600">No skills listed yet</p>';
     }
 
-    return `
-        <div class="flex flex-wrap gap-2">
-            ${cvData.skills.map(skill => `
-                <span class="px-3 py-1 bg-gray-100 rounded-full text-sm">${skill}</span>
-            `).join('')}
-        </div>
-    `;
+    return cvData.skills.map(skill => `
+      <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">${skill}</span>
+    `).join('');
 }
 
 
 
 function generateCVPreview() {
-    // Get selected template and generate HTML based on the template
     const templateStyles = {
         professional: {
-            containerClass: 'max-w-4xl mx-auto font-sans',
-            headerClass: 'bg-gray-100 p-8 rounded-t-lg',
-            sectionClass: 'my-6',
+            containerClass: 'max-w-4xl mx-auto font-sans bg-white shadow-lg rounded-lg overflow-hidden',
+            headerClass: 'bg-gray-800 text-white p-6',
+            sectionClass: 'mb-8',
+            titleClass: 'text-2xl font-bold text-gray-800 mb-2',
+            subtitleClass: 'text-lg font-medium mt-2',
+            textClass: 'text-gray-600',
         },
         academic: {
-            containerClass: 'max-w-4xl mx-auto font-serif',
-            headerClass: 'border-b-2 border-academic-primary pb-4',
-            sectionClass: 'my-8',
+            containerClass: 'max-w-4xl mx-auto font-serif bg-white shadow-lg rounded-lg overflow-hidden',
+            headerClass: 'bg-academic-primary text-white p-6',
+            sectionClass: 'mb-8',
+            titleClass: 'text-2xl font-bold text-academic-primary mb-2',
+            subtitleClass: 'text-lg font-medium mt-2',
+            textClass: 'text-gray-600',
         },
         creative: {
-            containerClass: 'max-w-4xl mx-auto font-sans',
-            headerClass: 'bg-academic-tertiary text-white p-8 rounded-lg',
-            sectionClass: 'my-6',
-        }
+            containerClass: 'max-w-4xl mx-auto font-sans bg-white shadow-lg rounded-lg overflow-hidden',
+            headerClass: 'bg-gradient-to-r from-academic-tertiary to-academic-secondary text-white p-6',
+            sectionClass: 'mb-8',
+            titleClass: 'text-2xl font-bold text-academic-tertiary mb-2',
+            subtitleClass: 'text-lg font-medium mt-2',
+            textClass: 'text-gray-600',
+        },
     };
 
     const style = templateStyles[selectedTemplate];
 
     return `
-    <div class="${style.containerClass}">
-      <header class="flex flex-col md:flex-row justify-between items-center ${style.headerClass} p-6">
-        <div>
-          <h1 class="text-3xl font-bold mb-2">${cvData.personalInfo.fullName || 'Your Name'}</h1>
-          <p class="text-xl">${cvData.personalInfo.title || 'Professional Title'}</p>
-        </div>
-        <div class="mt-4 md:mt-0 text-sm">
-          <p>${cvData.personalInfo.email || 'email@example.com'}</p>
-          <p>${cvData.personalInfo.phone || 'Phone Number'}</p>
-        </div>
-      </header>
-
-      <main class="p-6">
-        <!-- Education Section -->
-        <section class="${style.sectionClass}">
-          <h2 class="text-2xl font-bold mb-4">Education</h2>
-          <div class="space-y-4">
-            ${generateEducationHTML()}
+      <div class="${style.containerClass}">
+        <header class="${style.headerClass}">
+          <div class="flex justify-between items-center">
+            <div>
+              <h1 class="text-3xl font-bold">${cvData.personalInfo.fullName || 'Your Name'}</h1>
+              <p class="${style.subtitleClass}">${cvData.personalInfo.title || 'Professional Title'}</p>
+            </div>
+            <div class="text-right">
+              <p class="mb-1">${cvData.personalInfo.email || 'email@example.com'}</p>
+              <p>${cvData.personalInfo.phone || 'Phone Number'}</p>
+            </div>
           </div>
-        </section>
-
-        <!-- Experience Section -->
-        <section class="${style.sectionClass}">
-          <h2 class="text-2xl font-bold mb-4">Experience</h2>
-          <div class="space-y-4">
-            ${generateExperienceHTML()}
-          </div>
-        </section>
-
-        <!-- Skills Section -->
-        <section class="${style.sectionClass}">
-          <h2 class="text-2xl font-bold mb-4">Skills</h2>
-          <div class="flex flex-wrap gap-2">
-            ${generateSkillsHTML()}
-          </div>
-        </section>
-      </main>
-    </div>
-  `;
+        </header>
+  
+        <main class="p-6">
+          <!-- Summary Section -->
+          <section class="${style.sectionClass}">
+            <h2 class="${style.titleClass}">Summary</h2>
+            <p class="${style.textClass}">${cvData.personalInfo.summary || 'A brief summary of your professional profile'}</p>
+          </section>
+  
+          <!-- Education Section -->
+          <section class="${style.sectionClass}">
+            <h2 class="${style.titleClass}">Education</h2>
+            <div class="space-y-4">
+              ${generateEducationHTML(style)}
+            </div>
+          </section>
+  
+          <!-- Experience Section -->
+          <section class="${style.sectionClass}">
+            <h2 class="${style.titleClass}">Experience</h2>
+            <div class="space-y-4">
+              ${generateExperienceHTML(style)}
+            </div>
+          </section>
+  
+          <!-- Skills Section -->
+          <section class="${style.sectionClass}">
+            <h2 class="${style.titleClass}">Skills</h2>
+            <div class="flex flex-wrap gap-2">
+              ${generateSkillsHTML()}
+            </div>
+          </section>
+        </main>
+  
+        <footer class="bg-gray-900 text-white text-center py-4">
+          <p>&copy; ${new Date().getFullYear()} ${cvData.personalInfo.fullName || 'Your Name'}. All rights reserved.</p>
+        </footer>
+      </div>
+    `;
 }
+
 
 async function saveFormData() {
     const userId = localStorage.getItem('loggedInUserId');
@@ -583,21 +601,23 @@ async function downloadCV(format = 'pdf') {
 
             await html2pdf().set(opt).from(cvPreview).save();
             showMessage('message', 'CV downloaded successfully', 'success');
-        } else {
-            // For Word format, create a styled HTML file
-            const styles = `
-                <style>
-                    body { font-family: Arial, sans-serif; }
-                    .section { margin: 20px 0; }
-                    h1 { color: #1B3764; }
-                    h2 { color: #006B3F; }
-                </style>
-            `;
-            const blob = new Blob([styles + cvPreview.innerHTML], { type: 'application/msword' });
+        } else if (format === 'png') {
+            // Use html2canvas library to capture the CV as an image
+            const canvas = await html2canvas(cvPreview, {
+                scale: 2, // Adjust the scale for better image quality
+                useCORS: true, // Enable cross-origin resource sharing
+                allowTaint: true, // Allow cross-origin images
+            });
+
+            // Convert the canvas to a PNG image
+            const dataURL = canvas.toDataURL('image/png');
+
+            // Create a temporary link element to trigger the download
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `${cvData.personalInfo?.fullName || 'CV'}.doc`;
+            link.href = dataURL;
+            link.download = `${cvData.personalInfo?.fullName || 'CV'}.png`;
             link.click();
+
             showMessage('message', 'CV downloaded successfully', 'success');
         }
     } catch (error) {
@@ -605,7 +625,6 @@ async function downloadCV(format = 'pdf') {
         showMessage('message', `Error downloading CV: ${error.message}`, 'error');
     }
 }
-
 
 // Utility function for debouncing
 function debounce(func, wait) {
