@@ -481,37 +481,45 @@ function generateCVPreview() {
     const style = templateStyles[selectedTemplate];
 
     return `
-        <div class="${style.containerClass}">
-            <header class="${style.headerClass}">
-                <h1 class="text-3xl font-bold">${cvData.personalInfo.fullName || 'Your Name'}</h1>
-                <p class="text-xl mt-2">${cvData.personalInfo.title || 'Professional Title'}</p>
-                <div class="mt-4 text-sm">
-                    <p>${cvData.personalInfo.email || 'email@example.com'}</p>
-                    <p>${cvData.personalInfo.phone || 'Phone Number'}</p>
-                </div>
-            </header>
-
-            <main class="p-8">
-                <!-- Education Section -->
-                <section class="${style.sectionClass}">
-                    <h2 class="text-2xl font-bold mb-4">Education</h2>
-                    ${generateEducationHTML()}
-                </section>
-
-                <!-- Experience Section -->
-                <section class="${style.sectionClass}">
-                    <h2 class="text-2xl font-bold mb-4">Experience</h2>
-                    ${generateExperienceHTML()}
-                </section>
-
-                <!-- Skills Section -->
-                <section class="${style.sectionClass}">
-                    <h2 class="text-2xl font-bold mb-4">Skills</h2>
-                    ${generateSkillsHTML()}
-                </section>
-            </main>
+    <div class="${style.containerClass}">
+      <header class="flex flex-col md:flex-row justify-between items-center ${style.headerClass} p-6">
+        <div>
+          <h1 class="text-3xl font-bold mb-2">${cvData.personalInfo.fullName || 'Your Name'}</h1>
+          <p class="text-xl">${cvData.personalInfo.title || 'Professional Title'}</p>
         </div>
-    `;
+        <div class="mt-4 md:mt-0 text-sm">
+          <p>${cvData.personalInfo.email || 'email@example.com'}</p>
+          <p>${cvData.personalInfo.phone || 'Phone Number'}</p>
+        </div>
+      </header>
+
+      <main class="p-6">
+        <!-- Education Section -->
+        <section class="${style.sectionClass}">
+          <h2 class="text-2xl font-bold mb-4">Education</h2>
+          <div class="space-y-4">
+            ${generateEducationHTML()}
+          </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section class="${style.sectionClass}">
+          <h2 class="text-2xl font-bold mb-4">Experience</h2>
+          <div class="space-y-4">
+            ${generateExperienceHTML()}
+          </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="${style.sectionClass}">
+          <h2 class="text-2xl font-bold mb-4">Skills</h2>
+          <div class="flex flex-wrap gap-2">
+            ${generateSkillsHTML()}
+          </div>
+        </section>
+      </main>
+    </div>
+  `;
 }
 
 async function saveFormData() {
