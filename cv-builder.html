@@ -44,7 +44,8 @@
         class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 opacity-0 transition-opacity duration-300"></div>
 
     <!-- Debug Panel -->
-    <div id="debugPanel" class="hidden fixed top-0 right-0 m-4 p-4 bg-white rounded-lg shadow-lg max-w-md z-50">
+    <div id="debugPanel"
+        class="hidden fixed top-0 right-0 m-4 p-4 bg-white rounded-lg shadow-lg max-w-md max-h-[80vh] overflow-y-auto z-50">
         <div class="flex justify-between items-center mb-2">
             <h3 class="font-bold">Debug Info</h3>
             <button id="clearDebug" class="text-xs text-red-500 hover:text-red-700">Clear</button>
@@ -181,6 +182,10 @@
             <button id="nextBtn"
                 class="px-6 py-2.5 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
                 Next<i class="fas fa-arrow-right ml-2"></i>
+            </button>
+            <button id="saveProfileBtn"
+                class="hidden px-6 py-2.5 bg-academic-tertiary text-white rounded-lg hover:bg-academic-tertiary/90 transition-colors">
+                <i class="fas fa-save mr-2"></i>Save to Profile
             </button>
         </div>
     </main>

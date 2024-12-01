@@ -1,7 +1,7 @@
 // cv-builder.js
 import { auth, db, checkAuth, showMessage } from './auth.js';
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
+import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { saveCV } from './cv-operations.js';
 // Add html2pdf library
 const html2pdfScript = document.createElement('script');
 html2pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -9,6 +9,7 @@ document.head.appendChild(html2pdfScript);
 
 let currentStep = 1;
 let selectedTemplate = null;
+let currentCvId = null;
 let cvData = {
     template: '',
     personalInfo: {
@@ -80,6 +81,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadExistingCV();
 
     debugLog('✅ CV Builder initialized');
+
+    // Set up save button listener
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', saveCVToProfile);
+    }
+
+    
 });
 
 function initializeTemplateSelection() {
@@ -113,7 +122,7 @@ function setupNavigation() {
     const nextBtn = document.getElementById('nextBtn');
     const prevBtn = document.getElementById('prevBtn');
 
-    nextBtn.addEventListener('click', () => {
+    nextBtn.addEventListener('click', async () => {  // Make this async
         if (currentStep === 1 && !selectedTemplate) {
             showMessage('message', 'Please select a template first', 'error');
             return;
@@ -124,7 +133,8 @@ function setupNavigation() {
             updateStepUI();
             loadStepContent();
         } else {
-            finalizeCV();
+            // Changed from finalizeCV() to loadPreview()
+            await loadPreview();  
         }
     });
 
@@ -160,6 +170,58 @@ async function loadExistingCV() {
     }
 }
 
+// Replace the existing loadPreview() function
+async function loadPreview() {
+    debugLog('📄 Loading preview');
+    const container = document.getElementById('finishStep');
+    container.classList.remove('hidden');
+
+    // Show save button in preview step
+    const saveBtn = document.getElementById('saveProfileBtn');
+    if (saveBtn) {
+        saveBtn.classList.remove('hidden');
+    }
+
+    try {
+        // First save the current form data
+        const formData = await saveFormData();
+        if (formData) {
+            cvData = formData; // Update the global cvData
+            debugLog('📝 Form data updated for preview', cvData);
+        }
+
+        // Generate preview based on updated data
+        const previewHTML = generateCVPreview();
+        
+   // Update the container.innerHTML part in loadPreview
+container.innerHTML = `
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-serif font-bold text-academic-primary">Preview Your CV</h2>
+        <div class="space-x-4">
+            <button onclick="window.downloadCV('pdf')" class="px-4 py-2 bg-academic-tertiary text-white rounded-lg hover:bg-academic-tertiary/90 transition-colors">
+                <i class="fas fa-file-pdf mr-2"></i>Download PDF
+            </button>
+            <button onclick="window.downloadCV('png')" class="px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
+                <i class="fas fa-file-image mr-2"></i>Download PNG
+            </button>
+        </div>
+    </div>
+    <div id="cvPreview" class="bg-white shadow-lg rounded-lg p-8">
+        ${previewHTML}
+    </div>
+</div>
+`;
+
+        debugLog('✅ Preview loaded successfully');
+    } catch (error) {
+        debugLog('❌ Error loading preview', error);
+        showMessage('message', 'Error generating preview', 'error');
+    }
+}
+
+
+
 function updateStepUI() {
     debugLog('🔄 Updating step UI', { currentStep });
 
@@ -187,6 +249,12 @@ function updateStepUI() {
     nextBtn.innerHTML = currentStep === 3 ?
         '<i class="fas fa-download mr-2"></i>Finish & Download' :
         'Next<i class="fas fa-arrow-right ml-2"></i>';
+
+    // Add this near the end of updateStepUI function
+const saveBtn = document.getElementById('saveProfileBtn');
+if (saveBtn) {
+    saveBtn.classList.toggle('hidden', currentStep !== 3);
+}
 }
 
 function loadStepContent() {
@@ -373,32 +441,9 @@ function loadInformationForm() {
     form.addEventListener('input', debounce(saveFormData, 1000));
 }
 
-function loadPreview() {
-    const container = document.getElementById('finishStep');
-    container.classList.remove('hidden');
 
-    // Generate preview based on template and form data
-    const previewHTML = generateCVPreview();
 
-    container.innerHTML = `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-serif font-bold text-academic-primary">Preview Your CV</h2>
-                <div class="space-x-4">
-                    <button onclick="downloadCV('pdf')" class="px-4 py-2 bg-academic-tertiary text-white rounded-lg hover:bg-academic-tertiary/90 transition-colors">
-                        <i class="fas fa-file-pdf mr-2"></i>Download PDF
-                    </button>
-                    <button onclick="downloadCV('png')" class="px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
-                        <i class="fas fa-file-image mr-2"></i>Download PNG
-                    </button>
-                </div>
-            </div>
-            <div id="cvPreview" class="bg-white shadow-lg rounded-lg p-8">
-                ${previewHTML}
-            </div>
-        </div>
-    `;
-}
+
 
 // Add these helper functions
 function addEducationField() {
@@ -501,18 +546,53 @@ function generateExperienceHTML() {
 }
 
 function generateSkillsHTML() {
-    if (!cvData.skills || cvData.skills.length === 0) {
+    const technicalSkills = cvData.skills?.technical || [];
+    const softSkills = cvData.skills?.soft || [];
+    
+    if (technicalSkills.length === 0 && softSkills.length === 0) {
         return '<p class="text-gray-600">No skills listed yet</p>';
     }
 
-    return cvData.skills.map(skill => `
-      <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">${skill}</span>
-    `).join('');
+    let html = '';
+    
+    if (technicalSkills.length > 0) {
+        html += `
+            <div class="mb-4">
+                <h3 class="text-lg font-medium mb-2">Technical Skills</h3>
+                <div class="flex flex-wrap gap-2">
+                    ${technicalSkills.map(skill => `
+                        <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">${skill}</span>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    if (softSkills.length > 0) {
+        html += `
+            <div>
+                <h3 class="text-lg font-medium mb-2">Soft Skills</h3>
+                <div class="flex flex-wrap gap-2">
+                    ${softSkills.map(skill => `
+                        <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">${skill}</span>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    return html;
 }
 
-
-
 function generateCVPreview() {
+    debugLog('🎨 Generating CV Preview', {
+        template: selectedTemplate,
+        hasPersonalInfo: !!cvData.personalInfo,
+        hasEducation: (cvData.education || []).length,
+        hasExperience: (cvData.experience || []).length,
+        hasSkills: cvData.skills?.technical?.length || cvData.skills?.soft?.length
+    });
+    
     const templateStyles = {
         professional: {
             containerClass: 'max-w-4xl mx-auto font-sans bg-white shadow-lg rounded-lg overflow-hidden',
@@ -597,52 +677,59 @@ function generateCVPreview() {
 }
 
 
+// Find the saveFormData() function and update it
 async function saveFormData() {
     const userId = localStorage.getItem('loggedInUserId');
-    if (!userId) return;
+    if (!userId) return null;
+
+    debugLog('💾 Collecting form data');
 
     const formData = {
         template: selectedTemplate,
         personalInfo: {
-            fullName: document.querySelector('[name="fullName"]')?.value,
-            title: document.querySelector('[name="title"]')?.value,
-            email: document.querySelector('[name="email"]')?.value,
-            phone: document.querySelector('[name="phone"]')?.value,
-            objective: document.querySelector('[name="objective"]')?.value,
-            summary: document.querySelector('[name="summary"]')?.value,
+            fullName: document.querySelector('[name="fullName"]')?.value || '',
+            title: document.querySelector('[name="title"]')?.value || '',
+            email: document.querySelector('[name="email"]')?.value || '',
+            phone: document.querySelector('[name="phone"]')?.value || '',
+            objective: document.querySelector('[name="objective"]')?.value || '',
+            summary: document.querySelector('[name="summary"]')?.value || '',
         },
         education: Array.from(document.querySelectorAll('.education-entry')).map(entry => ({
-            degree: entry.querySelector('[name="degree"]')?.value,
-            institution: entry.querySelector('[name="institution"]')?.value,
-            gradYear: entry.querySelector('[name="gradYear"]')?.value,
-            gpa: entry.querySelector('[name="gpa"]')?.value,
+            degree: entry.querySelector('[name="degree"]')?.value || '',
+            institution: entry.querySelector('[name="institution"]')?.value || '',
+            gradYear: entry.querySelector('[name="gradYear"]')?.value || '',
+            gpa: entry.querySelector('[name="gpa"]')?.value || '',
         })),
         experience: Array.from(document.querySelectorAll('.experience-entry')).map(entry => ({
-            position: entry.querySelector('[name="position"]')?.value,
-            company: entry.querySelector('[name="company"]')?.value,
-            duration: entry.querySelector('[name="duration"]')?.value,
-            description: entry.querySelector('[name="description"]')?.value,
+            position: entry.querySelector('[name="position"]')?.value || '',
+            company: entry.querySelector('[name="company"]')?.value || '',
+            duration: entry.querySelector('[name="duration"]')?.value || '',
+            description: entry.querySelector('[name="description"]')?.value || '',
         })),
         certifications: Array.from(document.querySelectorAll('.certification-entry')).map(entry => ({
-            name: entry.querySelector('[name="certName"]')?.value,
-            organization: entry.querySelector('[name="certOrg"]')?.value,
-            date: entry.querySelector('[name="certDate"]')?.value,
+            name: entry.querySelector('[name="certName"]')?.value || '',
+            organization: entry.querySelector('[name="certOrg"]')?.value || '',
+            date: entry.querySelector('[name="certDate"]')?.value || '',
         })),
         skills: {
-            technical: document.querySelector('[name="technicalSkills"]')?.value.split(',').map(skill => skill.trim()),
-            soft: document.querySelector('[name="softSkills"]')?.value.split(',').map(skill => skill.trim()),
+            technical: document.querySelector('[name="technicalSkills"]')?.value.split(',').map(skill => skill.trim()).filter(Boolean),
+            soft: document.querySelector('[name="softSkills"]')?.value.split(',').map(skill => skill.trim()).filter(Boolean),
         },
         lastSaved: new Date().toISOString()
     };
 
+    debugLog('📝 Collected form data', formData);
+
     try {
         await setDoc(doc(db, "cvs", userId), formData);
-        cvData = formData;
+        cvData = formData; // Update the global cvData
+        debugLog('✅ Form data saved successfully');
         showMessage('message', 'Progress saved', 'success');
-        debugLog('💾 Form data saved', formData);
+        return formData;
     } catch (error) {
         debugLog('❌ Error saving form data', error);
         showMessage('message', 'Error saving progress', 'error');
+        return null;
     }
 }
 
@@ -733,6 +820,67 @@ function addCertificationField() {
     `;
     container.appendChild(newField);
 }
+
+async function saveCVToProfile() {
+    debugLog('🎯 Attempting to save CV to profile');
+    
+    const userId = localStorage.getItem('loggedInUserId');
+    if (!userId) {
+        debugLog('❌ No user ID found');
+        showMessage('message', 'Please log in to save your CV', 'error');
+        return;
+    }
+
+    try {
+        if (!currentCvId) {
+            currentCvId = `cv_${Date.now()}`;
+        }
+
+        const formData = await saveFormData(); // This gets the current form data
+        const cvToSave = {
+            id: currentCvId,
+            name: `${formData.personalInfo?.fullName || 'Untitled'} CV - ${new Date().toLocaleDateString()}`,
+            template: selectedTemplate,
+            ...formData
+        };
+
+        debugLog('📝 Saving CV data', cvToSave);
+
+        await setDoc(doc(db, "cvs", currentCvId), cvToSave);
+
+        const userRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
+
+        const cvList = userData.cvs || [];
+        const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
+
+        if (existingIndex > -1) {
+            cvList[existingIndex] = {
+                id: currentCvId,
+                name: cvToSave.name,
+                lastModified: cvToSave.lastModified
+            };
+        } else {
+            cvList.push({
+                id: currentCvId,
+                name: cvToSave.name,
+                lastModified: cvToSave.lastModified
+            });
+        }
+
+        await updateDoc(userRef, { cvs: cvList });
+
+        debugLog('✅ CV saved successfully');
+        showMessage('message', 'CV saved to your profile!', 'success');
+
+    } catch (error) {
+        debugLog('❌ Error saving CV', error);
+        showMessage('message', 'Error saving CV. Please try again.', 'error');
+    }
+}
+
+
 
 // Add to window object
 window.addCertificationField = addCertificationField;
