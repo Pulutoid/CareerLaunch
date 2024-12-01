@@ -11,10 +11,22 @@ let currentStep = 1;
 let selectedTemplate = null;
 let cvData = {
     template: '',
-    personalInfo: {},
+    personalInfo: {
+        fullName: '',
+        title: '',
+        email: '',
+        phone: '',
+        summary: '',
+        objective: ''
+    },
     education: [],
     experience: [],
-    skills: [],
+    skills: {
+        technical: [],
+        soft: []
+    },
+    certifications: [],
+    achievements: [],
     lastSaved: null
 };
 
@@ -288,16 +300,61 @@ function loadInformationForm() {
                     </button>
                 </div>
 
-                <!-- Skills -->
+               <!-- Professional Summary -->
+<div>
+    <h3 class="text-lg font-serif font-semibold text-academic-primary mb-4">Professional Summary</h3>
+    <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Career Objective</label>
+            <textarea name="objective" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Professional Summary</label>
+            <textarea name="summary" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"></textarea>
+        </div>
+    </div>
+</div>
+
+<!-- Skills -->
+<div>
+    <h3 class="text-lg font-serif font-semibold text-academic-primary mb-4">Skills</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Technical Skills</label>
+            <textarea name="technicalSkills" rows="3" placeholder="Programming languages, tools, etc." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Soft Skills</label>
+            <textarea name="softSkills" rows="3" placeholder="Leadership, communication, etc." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"></textarea>
+        </div>
+    </div>
+</div>
+
+<!-- Certifications -->
+<div>
+    <h3 class="text-lg font-serif font-semibold text-academic-primary mb-4">Certifications</h3>
+    <div id="certificationFields" class="space-y-4">
+        <div class="certification-entry bg-gray-50 p-4 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <h3 class="text-lg font-serif font-semibold text-academic-primary mb-4">Skills</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Skills (comma separated)</label>
-                            <textarea name="skills" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"></textarea>
-                        </div>
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700">Certification Name</label>
+                    <input type="text" name="certName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Issuing Organization</label>
+                    <input type="text" name="certOrg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Obtained</label>
+                    <input type="month" name="certDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="button" onclick="addCertificationField()" class="mt-2 text-academic-tertiary hover:text-academic-primary transition-colors">
+        <i class="fas fa-plus-circle mr-2"></i>Add More Certifications
+    </button>
+</div>
             </form>
         </div>
     `;
@@ -551,6 +608,8 @@ async function saveFormData() {
             title: document.querySelector('[name="title"]')?.value,
             email: document.querySelector('[name="email"]')?.value,
             phone: document.querySelector('[name="phone"]')?.value,
+            objective: document.querySelector('[name="objective"]')?.value,
+            summary: document.querySelector('[name="summary"]')?.value,
         },
         education: Array.from(document.querySelectorAll('.education-entry')).map(entry => ({
             degree: entry.querySelector('[name="degree"]')?.value,
@@ -564,7 +623,15 @@ async function saveFormData() {
             duration: entry.querySelector('[name="duration"]')?.value,
             description: entry.querySelector('[name="description"]')?.value,
         })),
-        skills: document.querySelector('[name="skills"]')?.value.split(',').map(skill => skill.trim()),
+        certifications: Array.from(document.querySelectorAll('.certification-entry')).map(entry => ({
+            name: entry.querySelector('[name="certName"]')?.value,
+            organization: entry.querySelector('[name="certOrg"]')?.value,
+            date: entry.querySelector('[name="certDate"]')?.value,
+        })),
+        skills: {
+            technical: document.querySelector('[name="technicalSkills"]')?.value.split(',').map(skill => skill.trim()),
+            soft: document.querySelector('[name="softSkills"]')?.value.split(',').map(skill => skill.trim()),
+        },
         lastSaved: new Date().toISOString()
     };
 
@@ -638,6 +705,37 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+function addCertificationField() {
+    const container = document.getElementById('certificationFields');
+    const newField = document.createElement('div');
+    newField.className = 'certification-entry bg-gray-50 p-4 rounded-lg';
+    newField.innerHTML = `
+        <div class="flex justify-between mb-2">
+            <div></div>
+            <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Certification Name</label>
+                <input type="text" name="certName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Issuing Organization</label>
+                <input type="text" name="certOrg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Date Obtained</label>
+                <input type="month" name="certDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+            </div>
+        </div>
+    `;
+    container.appendChild(newField);
+}
+
+// Add to window object
+window.addCertificationField = addCertificationField;
 
 // Add function to Window object for onclick handlers
 window.addEducationField = addEducationField;
