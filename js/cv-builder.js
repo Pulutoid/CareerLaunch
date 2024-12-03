@@ -1,8 +1,8 @@
 // cv-builder.js
 import { auth, db, checkAuth, showMessage } from './auth.js';
 import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-import { saveCV } from './cv-operations.js';
 import { generateCVPreview } from './cv-preview.js';
+import { saveCV, saveCVToProfile, downloadCV } from './cv-operations.js';
 // Add html2pdf library
 const html2pdfScript = document.createElement('script');
 html2pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -85,9 +85,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Set up save button listener
     const saveProfileBtn = document.getElementById('saveProfileBtn');
-    if (saveProfileBtn) {
-        saveProfileBtn.addEventListener('click', saveCVToProfile);
-    }
+   // Find where saveProfileBtn is set up and replace with:
+if (saveProfileBtn) {
+    saveProfileBtn.addEventListener('click', async () => {
+        try {
+            await saveCVToProfile(cvData, selectedTemplate, currentCvId);
+            showMessage('message', 'CV saved to your profile!', 'success');
+        } catch (error) {
+            showMessage('message', 'Error saving CV. Please try again.', 'error');
+        }
+    });
+}
 
     
 });
@@ -574,52 +582,7 @@ async function saveFormData() {
     }
 }
 
-async function downloadCV(format = 'pdf') {
-    const cvPreview = document.getElementById('cvPreview');
 
-    try {
-        showMessage('message', 'Preparing download...', 'info');
-
-        if (format === 'pdf') {
-            const opt = {
-                margin: 1,
-                filename: `${cvData.personalInfo?.fullName || 'CV'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Make sure html2pdf is loaded
-            if (typeof html2pdf === 'undefined') {
-                throw new Error('PDF library not loaded');
-            }
-
-            await html2pdf().set(opt).from(cvPreview).save();
-            showMessage('message', 'CV downloaded successfully', 'success');
-        } else if (format === 'png') {
-            // Use html2canvas library to capture the CV as an image
-            const canvas = await html2canvas(cvPreview, {
-                scale: 2, // Adjust the scale for better image quality
-                useCORS: true, // Enable cross-origin resource sharing
-                allowTaint: true, // Allow cross-origin images
-            });
-
-            // Convert the canvas to a PNG image
-            const dataURL = canvas.toDataURL('image/png');
-
-            // Create a temporary link element to trigger the download
-            const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = `${cvData.personalInfo?.fullName || 'CV'}.png`;
-            link.click();
-
-            showMessage('message', 'CV downloaded successfully', 'success');
-        }
-    } catch (error) {
-        debugLog('❌ Error downloading CV', error);
-        showMessage('message', `Error downloading CV: ${error.message}`, 'error');
-    }
-}
 
 // Utility function for debouncing
 function debounce(func, wait) {
@@ -662,82 +625,6 @@ function addCertificationField() {
     container.appendChild(newField);
 }
 
-async function saveCVToProfile() {
-    debugLog('🎯 Attempting to save CV to profile');
-    
-    const userId = localStorage.getItem('loggedInUserId');
-    if (!userId) {
-        debugLog('❌ No user ID found');
-        showMessage('message', 'Please log in to save your CV', 'error');
-        return;
-    }
-
-    try {
-        if (!currentCvId) {
-            currentCvId = `cv_${Date.now()}`;
-        }
-
-        // Get current form data
-        const formData = await saveFormData();
-        if (!formData) {
-            throw new Error('Failed to collect form data');
-        }
-
-        // Clean and prepare the CV data
-        const cvToSave = {
-            id: currentCvId,
-            name: `${formData.personalInfo?.fullName || 'Untitled'} CV - ${new Date().toLocaleDateString()}`,
-            template: selectedTemplate,
-            personalInfo: formData.personalInfo || {},
-            education: formData.education || [],
-            experience: formData.experience || [],
-            skills: formData.skills || { technical: [], soft: [] },
-            certifications: formData.certifications || [],
-            lastModified: new Date().toISOString(),
-            userId: userId // Add user reference
-        };
-
-        debugLog('📝 Saving CV data', cvToSave);
-
-        // Save CV document
-        await setDoc(doc(db, "cvs", currentCvId), cvToSave);
-
-        // Update user's CV list
-        const userRef = doc(db, "users", userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (!userDoc.exists()) {
-            throw new Error('User document not found');
-        }
-
-        const userData = userDoc.data();
-        const cvList = userData.cvs || [];
-        
-        // Update or add CV reference
-        const cvReference = {
-            id: currentCvId,
-            name: cvToSave.name,
-            lastModified: cvToSave.lastModified
-        };
-
-        const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
-        if (existingIndex > -1) {
-            cvList[existingIndex] = cvReference;
-        } else {
-            cvList.push(cvReference);
-        }
-
-        // Update user document
-        await updateDoc(userRef, { cvs: cvList });
-
-        debugLog('✅ CV saved successfully');
-        showMessage('message', 'CV saved to your profile!', 'success');
-
-    } catch (error) {
-        debugLog('❌ Error saving CV', error);
-        showMessage('message', 'Error saving CV. Please try again.', 'error');
-    }
-}
 
 
 // Add to window object
@@ -746,4 +633,13 @@ window.addCertificationField = addCertificationField;
 // Add function to Window object for onclick handlers
 window.addEducationField = addEducationField;
 window.addExperienceField = addExperienceField;
-window.downloadCV = downloadCV;
+window.downloadCV = async (format) => {
+    const cvPreview = document.getElementById('cvPreview');
+    try {
+        showMessage('message', 'Preparing download...', 'info');
+        await downloadCV(cvPreview, cvData, format);
+        showMessage('message', 'CV downloaded successfully', 'success');
+    } catch (error) {
+        showMessage('message', `Error downloading CV: ${error.message}`, 'error');
+    }
+};
