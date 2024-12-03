@@ -1,7 +1,6 @@
 // dashboard.js
 import { auth, db, checkAuth } from './auth.js';
-import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
+import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 
 // Debug utility
@@ -212,6 +211,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Load recent activity
         await loadRecentActivity(userId);
+        // Load user's CVs
+await loadUserCVs(userId);
 
     } catch (error) {
         debugLog('Error loading dashboard:', {
@@ -430,6 +431,110 @@ async function loadRecentActivity(userId) {
     }
 }
 
+
+async function loadUserCVs(userId) {
+    debugLog('📄 Loading user CVs...');
+    
+    const cvList = document.getElementById('cvList');
+    if (!cvList) {
+        debugLog('⚠️ CV list element not found');
+        return;
+    }
+
+    try {
+        // Query CVs where userId matches
+        const cvsQuery = query(
+            collection(db, "cvs"),
+            where("userId", "==", userId)
+        );
+        
+        const cvSnapshot = await getDocs(cvsQuery);
+        
+        debugLog(`Found ${cvSnapshot.size} CVs`);
+        
+        // Clear loading message
+        cvList.innerHTML = '';
+
+        if (cvSnapshot.empty) {
+            cvList.innerHTML = `
+                <div class="col-span-full text-center py-8">
+                    <p class="text-gray-500 mb-4">No CVs created yet</p>
+                    <a href="cv-builder.html" 
+                       class="inline-flex items-center justify-center bg-academic-primary text-white px-6 py-2.5 rounded-lg hover:bg-academic-dark transition-colors">
+                        <i class="fas fa-plus-circle mr-2"></i>Create Your First CV
+                    </a>
+                </div>`;
+            return;
+        }
+
+        // Display each CV
+        cvSnapshot.forEach(doc => {
+            const cv = doc.data();
+            const lastModified = cv.lastModified ? new Date(cv.lastModified).toLocaleDateString() : 'N/A';
+            
+            const cvCard = document.createElement('div');
+            cvCard.className = 'bg-academic-warm/5 rounded-lg p-6 border border-academic-tertiary/20';
+            cvCard.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="font-medium text-academic-primary">${cv.name || 'Untitled CV'}</h3>
+                        <p class="text-sm text-gray-500">Last modified: ${lastModified}</p>
+                    </div>
+                    <span class="text-xs text-academic-tertiary bg-academic-warm/10 px-2 py-1 rounded">
+                        ${cv.template || 'Standard'} Template
+                    </span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.location.href='cv-builder.html?cvId=${doc.id}'"
+                            class="flex-1 text-academic-primary hover:bg-academic-warm/10 px-3 py-1.5 rounded text-sm transition-colors">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                    <button onclick="downloadCV('${doc.id}')"
+                            class="flex-1 text-academic-tertiary hover:bg-academic-warm/10 px-3 py-1.5 rounded text-sm transition-colors">
+                        <i class="fas fa-download mr-1"></i>Download
+                    </button>
+                    <button onclick="deleteCV('${doc.id}')"
+                            class="text-red-500 hover:bg-red-50 px-3 py-1.5 rounded text-sm transition-colors">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            cvList.appendChild(cvCard);
+        });
+
+    } catch (error) {
+        debugLog('❌ Error loading CVs:', error);
+        cvList.innerHTML = `
+            <div class="col-span-full text-center text-red-500 py-4">
+                Error loading CVs. Please try again later.
+            </div>`;
+    }
+}
+
+// Add delete CV function
+async function deleteCV(cvId) {
+    debugLog('🗑️ Attempting to delete CV:', cvId);
+    
+    if (!confirm('Are you sure you want to delete this CV?')) {
+        return;
+    }
+
+    try {
+        await deleteDoc(doc(db, "cvs", cvId));
+        debugLog('✅ CV deleted successfully');
+        // Reload CVs
+        const userId = localStorage.getItem('loggedInUserId');
+        if (userId) {
+            loadUserCVs(userId);
+        }
+    } catch (error) {
+        debugLog('❌ Error deleting CV:', error);
+        alert('Error deleting CV. Please try again.');
+    }
+}
+
+// Make deleteCV available globally
+window.deleteCV = deleteCV;
 
 
 function getActivityIcon(type) {

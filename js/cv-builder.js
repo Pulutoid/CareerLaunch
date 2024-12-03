@@ -821,6 +821,65 @@ function addCertificationField() {
     container.appendChild(newField);
 }
 
+// async function saveCVToProfile() {
+//     debugLog('🎯 Attempting to save CV to profile');
+    
+//     const userId = localStorage.getItem('loggedInUserId');
+//     if (!userId) {
+//         debugLog('❌ No user ID found');
+//         showMessage('message', 'Please log in to save your CV', 'error');
+//         return;
+//     }
+
+//     try {
+//         if (!currentCvId) {
+//             currentCvId = `cv_${Date.now()}`;
+//         }
+
+//         const formData = await saveFormData(); // This gets the current form data
+//         const cvToSave = {
+//             id: currentCvId,
+//             name: `${formData.personalInfo?.fullName || 'Untitled'} CV - ${new Date().toLocaleDateString()}`,
+//             template: selectedTemplate,
+//             ...formData
+//         };
+
+//         debugLog('📝 Saving CV data', cvToSave);
+
+//         await setDoc(doc(db, "cvs", currentCvId), cvToSave);
+
+//         const userRef = doc(db, "users", userId);
+//         const userDoc = await getDoc(userRef);
+//         const userData = userDoc.data();
+
+//         const cvList = userData.cvs || [];
+//         const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
+
+//         if (existingIndex > -1) {
+//             cvList[existingIndex] = {
+//                 id: currentCvId,
+//                 name: cvToSave.name,
+//                 lastModified: cvToSave.lastModified
+//             };
+//         } else {
+//             cvList.push({
+//                 id: currentCvId,
+//                 name: cvToSave.name,
+//                 lastModified: cvToSave.lastModified
+//             });
+//         }
+
+//         await updateDoc(userRef, { cvs: cvList });
+
+//         debugLog('✅ CV saved successfully');
+//         showMessage('message', 'CV saved to your profile!', 'success');
+
+//     } catch (error) {
+//         debugLog('❌ Error saving CV', error);
+//         showMessage('message', 'Error saving CV. Please try again.', 'error');
+//     }
+// }
+
 async function saveCVToProfile() {
     debugLog('🎯 Attempting to save CV to profile');
     
@@ -832,43 +891,58 @@ async function saveCVToProfile() {
     }
 
     try {
+        // Generate CV ID if not exists
         if (!currentCvId) {
             currentCvId = `cv_${Date.now()}`;
         }
 
-        const formData = await saveFormData(); // This gets the current form data
+        // Get current form data
+        const formData = await saveFormData();
+        if (!formData) {
+            throw new Error('Failed to collect form data');
+        }
+
+        // Prepare CV data
         const cvToSave = {
             id: currentCvId,
             name: `${formData.personalInfo?.fullName || 'Untitled'} CV - ${new Date().toLocaleDateString()}`,
             template: selectedTemplate,
-            ...formData
+            data: formData, // Nest the form data
+            lastModified: new Date().toISOString(),
+            userId: userId // Add user reference
         };
 
         debugLog('📝 Saving CV data', cvToSave);
 
+        // Save CV document
         await setDoc(doc(db, "cvs", currentCvId), cvToSave);
 
+        // Update user's CV list
         const userRef = doc(db, "users", userId);
         const userDoc = await getDoc(userRef);
-        const userData = userDoc.data();
-
-        const cvList = userData.cvs || [];
-        const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
-
-        if (existingIndex > -1) {
-            cvList[existingIndex] = {
-                id: currentCvId,
-                name: cvToSave.name,
-                lastModified: cvToSave.lastModified
-            };
-        } else {
-            cvList.push({
-                id: currentCvId,
-                name: cvToSave.name,
-                lastModified: cvToSave.lastModified
-            });
+        
+        if (!userDoc.exists()) {
+            throw new Error('User document not found');
         }
 
+        const userData = userDoc.data();
+        const cvList = userData.cvs || [];
+        
+        // Update or add CV reference
+        const cvReference = {
+            id: currentCvId,
+            name: cvToSave.name,
+            lastModified: cvToSave.lastModified
+        };
+
+        const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
+        if (existingIndex > -1) {
+            cvList[existingIndex] = cvReference;
+        } else {
+            cvList.push(cvReference);
+        }
+
+        // Update user document
         await updateDoc(userRef, { cvs: cvList });
 
         debugLog('✅ CV saved successfully');
@@ -879,8 +953,6 @@ async function saveCVToProfile() {
         showMessage('message', 'Error saving CV. Please try again.', 'error');
     }
 }
-
-
 
 // Add to window object
 window.addCertificationField = addCertificationField;
