@@ -1,20 +1,11 @@
 <!-- student-dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
-<!-- 
-    Version: 1.3
-    Last Updated: March 2024
-    Features:
-    - Enhanced academic styling
-    - Navy and gold color scheme
-    - Improved typography
-    - Preserved all functionality
--->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Dashboard - CareerLaunch</title>
+    <title>CareerLaunch - Student Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -22,17 +13,16 @@
                 extend: {
                     colors: {
                         'academic': {
-                            primary: '#00573C',    // Navy blue
+                            primary: '#00573C',    // Darker navy
                             secondary: '#8B4513',   // Brown accent
-                            tertiary: '#FFC107',    // Gold accent
+                            tertiary: '#AE8338',    // Bright gold
                             light: '#F5F5F5',      // Light background
-                            dark: '#0A1F3D',       // Darker navy
-                            warm: '#FFD700'        // Bright gold
+                            dark: '#00573C',       // Darker navy
+                            warm: '#FFC107'        // Gold accent
                         }
                     },
                     fontFamily: {
-                        'serif': ['Crimson Text', 'serif'],
-                        'sans': ['Inter', 'sans-serif']
+                        'serif': ['Montserrat', 'sans-serif']
                     }
                 }
             }
@@ -40,9 +30,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body class="min-h-screen bg-academic-light" data-requires-auth="true">
@@ -175,18 +163,18 @@
         </div>
 
         <!-- My CVs Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-serif font-bold text-academic-primary">My CVs</h2>
-                <a href="cv-builder.html" class="text-academic-tertiary hover:text-academic-primary transition-colors">
-                    <i class="fas fa-plus-circle mr-2"></i>Create New CV
+        <section class="bg-gray-100 text-black-500 rounded-xl shadow-sm border border-gray-200 p-8 mb-10">
+            <div class="flex text-black-500 justify-between items-center mb-6">
+                <h2 class="text-2xl text-black-500 font-bold text-gray-800">My CVs</h2>
+                <a href="cv-builder.html" class="text-black-500 hover:text-blue-700 transition-colors">
+                    <i class="fas text-black-500 fa-plus-circle mr-2"></i>Create New CV
                 </a>
             </div>
-            <div id="cvList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="cvList" class="grid text-black-500 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- CVs will be dynamically inserted here -->
-                <div class="text-center text-gray-500 py-4 col-span-full">Loading CVs...</div>
+                <div class="text-center text-black-500   py-4 col-span-full">Loading CVs...</div>
             </div>
-        </div>
+        </section>
 
         <!-- Job Applications -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
