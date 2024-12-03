@@ -15,18 +15,17 @@
             theme: {
                 extend: {
                     colors: {
-                        'kfupm': {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            200: '#bbf7d0',
-                            300: '#86efac',
-                            400: '#4ade80',
-                            500: '#006B3F',  // KFUPM primary green
-                            600: '#005a35',  // Darker shade for hover
-                            700: '#004a2b',  // Even darker for active states
-                            800: '#003920',
-                            900: '#002915'
+                        'academic': {
+                            primary: '#00573C',    // Darker navy
+                            secondary: '#8B4513',   // Brown accent
+                            tertiary: '#AE8338',    // Bright gold
+                            light: '#F5F5F5',      // Light background
+                            dark: '#00573C',       // Darker navy
+                            warm: '#FFC107'        // Gold accent
                         }
+                    },
+                    fontFamily: {
+                        'serif': ['Montserrat', 'sans-serif']
                     }
                 }
             }
@@ -34,48 +33,52 @@
     </script>
 </head>
 
-<body class="min-h-screen bg-gray-50">
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
+<body class="min-h-screen bg-academic-light">
+    <nav class="bg-academic-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                    <a href="home.html" class="text-2xl font-serif font-bold">
+                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                    </a>
                 </div>
-                <div class="flex items-center">
-                    <a href="home.html" class="text-gray-600 hover:text-kfupm-500">Home</a>
-                    <a href="signup.html" class="ml-4 text-gray-600 hover:text-kfupm-500">Sign Up</a>
+                <div class="flex items-center space-x-8">
+                    <a href="home.html"
+                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Home</a>
+                    <a href="signup.html"
+                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Sign
+                        Up</a>
                 </div>
             </div>
         </div>
     </nav>
-
-    <main class="max-w-md mx-auto mt-10 px-4">
-        <div class="bg-white rounded-lg shadow-md p-8">
-            <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Login to Your Account</h2>
+    <main class="max-w-md mx-auto mt-20 px-6">
+        <div class="bg-white rounded-xl shadow-md p-8">
+            <h2 class="text-2xl font-serif font-bold text-center text-academic-primary mb-8">Login to Your Account</h2>
 
             <form id="login-form" class="space-y-6">
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" id="email" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-academic-tertiary focus:border-academic-tertiary">
                 </div>
 
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                     <input type="password" id="password" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-kfupm-500 focus:border-blue-500">
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-academic-tertiary focus:border-academic-tertiary">
                 </div>
 
                 <div class="flex items-center justify-between">
                     <button type="submit"
-                        class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kfupm-500 hover:bg-kfupm-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kfupm-500">
+                        class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-academic-tertiary hover:bg-academic-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-academic-tertiary">
                         Login
                     </button>
                 </div>
             </form>
 
             <div class="mt-4">
-                <button id="forgotPassword" class="text-sm text-kfupm-500 hover:text-blue-500">
+                <button id="forgotPassword" class="text-sm text-academic-tertiary hover:text-blue-500">
                     Forgot Password?
                 </button>
             </div>
@@ -85,7 +88,7 @@
             <div class="mt-6 text-center">
                 <p class="text-sm text-gray-600">
                     Don't have an account?
-                    <a href="signup.html" class="font-medium text-kfupm-500 hover:text-blue-500">
+                    <a href="signup.html" class="font-medium text-academic-tertiary hover:text-blue-500">
                         Sign up here
                     </a>
                 </p>
@@ -93,14 +96,14 @@
         </div>
     </main>
 
-    <footer class="mt-8 text-center text-gray-500">
-        <p>© 2024 CareerLaunch</p>
+    <footer class="bg-academic-primary text-academic-tertiary/90 mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-6 text-center">
+            © 2024 CareerLaunch - KFUPM. All rights reserved.
+        </div>
     </footer>
 
     <script type="module" src="js/firebaseLogin.js"></script>
-    <!--- Add this in the <head> section of all HTML files, right after tailwind CDN script -->
     <script src="js/config/tailwind.config.js"></script>
-
 </body>
 
 </html>
