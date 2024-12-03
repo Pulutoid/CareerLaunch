@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         redirectUrl = 'student-dashboard.html';
                         break;
                     case 'employer':
-                        redirectUrl = 'employer-student-dashboard.html';
+                        redirectUrl = 'employer-dashboard.html';
                         break;
                     case 'admin':
                         redirectUrl = 'admin-student-dashboard.html';
