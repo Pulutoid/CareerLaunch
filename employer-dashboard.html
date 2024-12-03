@@ -13,12 +13,17 @@
             theme: {
                 extend: {
                     colors: {
-                        'kfupm': {
-                            100: '#dcfce7',
-                            200: '#bbf7d0',
-                            500: '#006B3F',
-                            600: '#005a35',
+                        'academic': {
+                            primary: '#00573C',    // Darker navy
+                            secondary: '#8B4513',   // Brown accent
+                            tertiary: '#AE8338',    // Bright gold
+                            light: '#F5F5F5',      // Light background
+                            dark: '#00573C',       // Darker navy
+                            warm: '#FFC107'        // Gold accent
                         }
+                    },
+                    fontFamily: {
+                        'serif': ['Montserrat', 'sans-serif']
                     }
                 }
             }
@@ -26,6 +31,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .message-visible {
             opacity: 1 !important;
@@ -54,8 +60,7 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-gray-50" data-requires-auth="true">
-    <!-- Debug Panel -->
+<body class="min-h-screen bg-academic-light" data-requires-auth="true"> <!-- Debug Panel -->
     <div id="debugPanel"
         class="hidden fixed top-0 right-0 m-4 p-4 bg-yellow-100 rounded shadow-lg max-w-lg max-h-screen overflow-auto z-50">
         <div class="flex justify-between items-center mb-2">
@@ -65,20 +70,23 @@
         <pre id="debugLog" class="text-xs whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
+    <nav class="bg-academic-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                    <a href="home.html" class="text-2xl font-serif font-bold">
+                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                    </a>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="toggleDebug" class="text-sm text-gray-500 hover:text-kfupm-500">
-                        <i class="fas fa-bug mr-2"></i>Debug Info
-                    </button>
-                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Employer Account</span>
-                    <span id="userDisplayName" class="text-gray-700"></span>
+                <div class="flex items-center space-x-8">
+                    <span
+                        class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Employer
+                        Account</span>
+                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
                     <button onclick="logout()"
-                        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Logout</button>
+                        class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
+                        Logout
+                    </button>
                 </div>
             </div>
         </div>
@@ -88,20 +96,21 @@
 
     <main class="max-w-7xl mx-auto px-4 py-8">
         <!-- Company Profile Summary -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6 mb-8">
             <div class="flex justify-between items-start">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="companyName">Company</span></h1>
                     <p class="text-gray-600" id="companyPosition">Position</p>
                 </div>
                 <button onclick="editCompanyProfile()"
-                    class="px-4 py-2 text-sm text-kfupm-500 border border-kfupm-500 rounded-md hover:bg-kfupm-50">
+                    class="px-4 py-2 text-sm text-academic-tertiary border border-kfupm-500 rounded-md hover:bg-kfupm-50">
                     Edit Profile
                 </button>
             </div>
             <div id="profileCompletion" class="mt-4">
                 <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-kfupm-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div class="bg-academic-primary h-2 rounded-full transition-all duration-500" style="width: 0%">
+                    </div>
                 </div>
                 <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
             </div>
@@ -109,22 +118,22 @@
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <button id="postJobBtn" class="p-4 bg-white rounded-lg..."> <i
-                    class="fas fa-plus-circle text-kfupm-500 text-xl mb-2"></i>
+            <button id="postJobBtn" class="p-4 bg-white rounded-xl shadow-sm border border-gray-100..."> <i
+                    class="fas fa-plus-circle text-academic-tertiary text-xl mb-2"></i>
                 <h3 class="font-semibold">Post New Job</h3>
                 <p class="text-sm text-gray-600">Create a new job listing</p>
             </button>
 
             <button onclick="searchCandidates()"
-                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-search text-kfupm-500 text-xl mb-2"></i>
+                class="p-4 bg-white rounded-xl shadow-sm border border-gray-100 shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-search text-academic-tertiary text-xl mb-2"></i>
                 <h3 class="font-semibold">Search Candidates</h3>
                 <p class="text-sm text-gray-600">Find qualified students</p>
             </button>
 
             <button onclick="viewApplications()"
-                class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-file-alt text-kfupm-500 text-xl mb-2"></i>
+                class="p-4 bg-white rounded-xl shadow-sm border border-gray-100 shadow-md hover:shadow-lg transition-shadow">
+                <i class="fas fa-file-alt text-academic-tertiary text-xl mb-2"></i>
                 <h3 class="font-semibold">Review Applications</h3>
                 <p class="text-sm text-gray-600">Manage received applications</p>
             </button>
@@ -132,29 +141,29 @@
 
         <!-- Statistics Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
                 <h3 class="text-lg font-medium text-gray-900">Active Jobs</h3>
-                <p id="activeJobs" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+                <p id="activeJobs" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
                 <h3 class="text-lg font-medium text-gray-900">Applications</h3>
-                <p id="totalApplications" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+                <p id="totalApplications" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
                 <h3 class="text-lg font-medium text-gray-900">Profile Views</h3>
-                <p id="profileViews" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+                <p id="profileViews" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
                 <h3 class="text-lg font-medium text-gray-900">Interviews</h3>
-                <p id="scheduledInterviews" class="text-3xl font-bold text-kfupm-500 mt-2">0</p>
+                <p id="scheduledInterviews" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
             </div>
         </div>
 
         <!-- Active Job Listings -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6 mb-8">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-medium text-gray-900">Active Job Listings</h2>
                 <div class="flex space-x-2">
@@ -186,7 +195,7 @@
         </div>
 
         <!-- Recent Applications -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6 mb-8">
             <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Applications</h2>
             <div id="recentApplications" class="space-y-4">
                 <!-- Applications will be dynamically inserted here -->
@@ -194,7 +203,7 @@
         </div>
 
         <!-- Application Trends Chart -->
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">Application Trends</h2>
             <div class="h-64">
                 <canvas id="applicationTrendsChart"></canvas>
@@ -202,9 +211,9 @@
         </div>
     </main>
 
-    <footer class="bg-white mt-8">
-        <div class="max-w-7xl mx-auto py-6 px-4">
-            <div class="text-center text-gray-500">
+    <footer class="bg-academic-primary text-white mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-6">
+            <div class="text-center text-academic-tertiary/90">
                 © 2024 CareerLaunch - KFUPM. All rights reserved.
             </div>
         </div>
@@ -213,7 +222,7 @@
     <!-- Job Posting Modal -->
     <div id="postJobModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
         <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-xl w-full max-w-2xl">
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between p-6 border-b">
                     <h3 class="text-xl font-semibold text-gray-900">Post New Job</h3>
@@ -292,7 +301,7 @@
                     <!-- Submit Button -->
                     <div class="mt-6">
                         <button type="submit"
-                            class="w-full px-4 py-2 bg-kfupm-500 text-white rounded-md hover:bg-kfupm-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kfupm-500">
+                            class="w-full px-4 py-2 bg-academic-primary text-white rounded-md hover:bg-academic-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kfupm-500">
                             Post Job
                         </button>
                     </div>
