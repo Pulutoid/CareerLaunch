@@ -471,7 +471,7 @@ async function loadUserCVs(userId) {
         cvSnapshot.forEach(doc => {
             const cv = doc.data();
             const lastModified = cv.lastModified ? new Date(cv.lastModified).toLocaleDateString() : 'N/A';
-            
+        
             const cvCard = document.createElement('div');
             cvCard.className = 'bg-academic-warm/5 rounded-lg p-6 border border-academic-tertiary/20';
             cvCard.innerHTML = `
@@ -484,15 +484,14 @@ async function loadUserCVs(userId) {
                         ${cv.template || 'Standard'} Template
                     </span>
                 </div>
+
+
                 <div class="flex gap-2">
                     <button onclick="window.location.href='cv-builder.html?cvId=${doc.id}'"
                             class="flex-1 text-academic-primary hover:bg-academic-warm/10 px-3 py-1.5 rounded text-sm transition-colors">
-                        <i class="fas fa-edit mr-1"></i>Edit
+                        <i class="fas fa-edit mr-1"></i> Edit & Download
                     </button>
-                    <button onclick="downloadCV('${doc.id}')"
-                            class="flex-1 text-academic-tertiary hover:bg-academic-warm/10 px-3 py-1.5 rounded text-sm transition-colors">
-                        <i class="fas fa-download mr-1"></i>Download
-                    </button>
+                   
                     <button onclick="deleteCV('${doc.id}')"
                             class="text-red-500 hover:bg-red-50 px-3 py-1.5 rounded text-sm transition-colors">
                         <i class="fas fa-trash"></i>
@@ -501,6 +500,7 @@ async function loadUserCVs(userId) {
             `;
             cvList.appendChild(cvCard);
         });
+
 
     } catch (error) {
         debugLog('❌ Error loading CVs:', error);
