@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Load recent activity
         await loadRecentActivity(userId);
         // Load user's CVs
-await loadUserCVs(userId);
+        await loadUserCVs(userId);
 
     } catch (error) {
         debugLog('Error loading dashboard:', {
@@ -354,87 +354,98 @@ function initializeActivityChart(userId, accountType) {
 }
 
 async function loadRecentActivity(userId) {
-    debugLog('Loading recent activity...');
+    debugLog('📬 Loading recent applications...');
 
     const activityList = document.getElementById('applicationsTable');
     if (!activityList) {
-        debugLog('⚠️ Activity list element (applicationsTable) not found in DOM');
+        debugLog('⚠️ Applications table not found');
         return;
     }
 
     try {
-        debugLog('Querying activities collection...');
-        const activitiesQuery = query(
-            collection(db, "activities"),
-            where("userId", "==", userId),
-            orderBy("timestamp", "desc"),
-            limit(5)
+        const applicationsQuery = query(
+            collection(db, "applications"),
+            where("userId", "==", userId)
         );
 
-        const activities = await getDocs(activitiesQuery);
+        const querySnapshot = await getDocs(applicationsQuery);
         activityList.innerHTML = '';
 
-        debugLog(`Found ${activities.size} activities`);
+        debugLog(`📊 Found ${querySnapshot.size} applications`);
 
-        if (activities.size === 0) {
-            debugLog('No activities found, displaying empty message');
+        if (querySnapshot.empty) {
             activityList.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                        No applications yet
-                    </td>
-                </tr>`;
+                <div class="col-span-full text-center py-8">
+                    <p class="text-gray-500 mb-4">No applications submitted yet</p>
+                    <a href="job-board.html" 
+                       class="inline-flex items-center justify-center bg-academic-primary text-white px-6 py-2.5 rounded-lg hover:bg-academic-dark transition-colors">
+                        <i class="fas fa-search mr-2"></i>Browse Jobs
+                    </a>
+                </div>`;
             return;
         }
 
-        activities.forEach(doc => {
-            const activity = doc.data();
-            debugLog('Processing activity:', activity);
+        querySnapshot.forEach(doc => {
+            const application = doc.data();
+            const submittedDate = application.createdAt ?
+                new Date(application.createdAt.toDate()).toLocaleDateString() : 'N/A';
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">
-                    ${activity.company || 'N/A'}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    ${activity.position || 'N/A'}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    ${formatTimestamp(activity.timestamp) || 'N/A'}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        ${activity.status || 'Pending'}
+            const applicationCard = document.createElement('div');
+            applicationCard.className = 'bg-white rounded-lg shadow-md p-6 mb-4';
+            applicationCard.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="font-medium text-lg text-gray-900">${application.jobTitle}</h3>
+                        <p class="text-sm text-gray-600">${application.companyName}</p>
+                        <p class="text-xs text-gray-500 mt-1">Applied: ${submittedDate}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-sm ${getStatusStyle(application.status)}">
+                        ${application.status}
                     </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button class="text-kfupm-500 hover:text-kfupm-600">
-                        View Details
-                    </button>
-                </td>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="text-sm text-gray-600">
+                        <p class="line-clamp-2">${application.coverLetter}</p>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <span class="text-sm text-gray-500">
+                            CV Used: ${application.cvId}
+                        </span>
+                        <button onclick="viewApplicationDetails('${doc.id}')" 
+                            class="text-kfupm-500 hover:text-kfupm-600 text-sm font-medium">
+                            View Details
+                        </button>
+                    </div>
+                </div>
             `;
-            activityList.appendChild(row);
+            activityList.appendChild(applicationCard);
         });
 
     } catch (error) {
-        debugLog('Error loading activities:', {
-            error: error.message,
-            code: error.code,
-            stack: error.stack
-        });
+        debugLog('❌ Error loading applications:', error);
         activityList.innerHTML = `
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-red-500">
-                    Error loading applications
-                </td>
-            </tr>`;
+            <div class="col-span-full text-center text-red-500 py-4">
+                Error loading applications. Please try again later.
+            </div>`;
     }
+}
+
+// Add this helper function for status styling
+function getStatusStyle(status) {
+    const styles = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'reviewing': 'bg-blue-100 text-blue-800',
+        'accepted': 'bg-green-100 text-green-800',
+        'rejected': 'bg-red-100 text-red-800',
+        'default': 'bg-gray-100 text-gray-600'
+    };
+    return styles[status?.toLowerCase()] || styles.default;
 }
 
 
 async function loadUserCVs(userId) {
     debugLog('📄 Loading user CVs...');
-    
+
     const cvList = document.getElementById('cvList');
     if (!cvList) {
         debugLog('⚠️ CV list element not found');
@@ -447,11 +458,11 @@ async function loadUserCVs(userId) {
             collection(db, "cvs"),
             where("userId", "==", userId)
         );
-        
+
         const cvSnapshot = await getDocs(cvsQuery);
-        
+
         debugLog(`Found ${cvSnapshot.size} CVs`);
-        
+
         // Clear loading message
         cvList.innerHTML = '';
 
@@ -471,7 +482,7 @@ async function loadUserCVs(userId) {
         cvSnapshot.forEach(doc => {
             const cv = doc.data();
             const lastModified = cv.lastModified ? new Date(cv.lastModified).toLocaleDateString() : 'N/A';
-        
+
             const cvCard = document.createElement('div');
             cvCard.className = 'bg-academic-warm/5 rounded-lg p-6 border border-academic-tertiary/20';
             cvCard.innerHTML = `
@@ -514,7 +525,7 @@ async function loadUserCVs(userId) {
 // Add delete CV function
 async function deleteCV(cvId) {
     debugLog('🗑️ Attempting to delete CV:', cvId);
-    
+
     if (!confirm('Are you sure you want to delete this CV?')) {
         return;
     }
@@ -563,3 +574,9 @@ function formatTimestamp(timestamp) {
     console.log(`[Dashboard] Formatted timestamp: ${formatted}`);
     return formatted;
 }
+
+window.viewApplicationDetails = (applicationId) => {
+    debugLog('🔍 Viewing application details', { applicationId });
+    // Implement application details modal here
+    alert('Application details feature coming soon!');
+};
