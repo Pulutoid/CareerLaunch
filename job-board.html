@@ -125,26 +125,36 @@
     </main>
 
     <!-- Job Details Modal -->
+    <!-- Job Details Split Modal -->
     <div id="jobDetailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-start mb-4">
-                <h3 id="modalJobTitle" class="text-xl font-bold text-gray-900">Job Title</h3>
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-6xl shadow-lg rounded-md bg-white">
+            <div class="flex justify-end mb-2">
                 <button onclick="closeJobModal()" class="text-gray-400 hover:text-gray-500">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div id="modalContent" class="space-y-4">
-                <!-- Job details will be inserted here -->
-            </div>
-            <div class="mt-6 flex justify-end space-x-4">
-                <button onclick="closeJobModal()"
-                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                    Close
-                </button>
-                <button onclick="showApplicationModal()"
-                    class="px-4 py-2 bg-academic-primary  text-white rounded-md hover:bg-academic-dark ">
-                    Apply Now
-                </button>
+            <div class="flex gap-6">
+                <!-- Job Details Panel -->
+                <div class="flex-1 border-r pr-6">
+                    <h3 id="modalJobTitle" class="text-xl font-bold text-gray-900 mb-4">Job Title</h3>
+                    <div id="modalContent" class="space-y-4">
+                        <!-- Job details will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Applications Panel -->
+                <div class="w-96">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Application Status</h3>
+                    <div id="applicationStatus" class="space-y-4">
+                        <!-- Application status will be shown here -->
+                    </div>
+                    <div class="mt-6">
+                        <button onclick="showApplicationModal()" id="applyButton"
+                            class="w-full px-4 py-2 bg-academic-primary text-white rounded-md hover:bg-academic-dark transition-colors">
+                            Apply Now
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -287,73 +287,94 @@ window.viewJobDetails = async (jobId) => {
 
     const modal = document.getElementById('jobDetailsModal');
     const content = document.getElementById('modalContent');
+    const applicationStatus = document.getElementById('applicationStatus');
 
     document.getElementById('modalJobTitle').textContent = job.title;
+
+    // Update job details panel
     content.innerHTML = `
-    <div class="space-y-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-lg font-medium">${job.companyName}</p>
-                <p class="text-gray-600">${job.department} • ${job.location}</p>
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-lg font-medium">${job.companyName}</p>
+                    <p class="text-gray-600">${job.department} • ${job.location}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full ${getJobTypeStyle(job.employmentType)}">
+                    ${job.employmentType}
+                </span>
             </div>
-            <span class="px-3 py-1 rounded-full ${getJobTypeStyle(job.employmentType)}">
-                ${job.employmentType}
-            </span>
-        </div>
-        <div class="prose max-w-none">
-            <h4 class="text-lg font-medium mb-2">Description</h4>
-            <p class="text-gray-600">${job.description}</p>
             
-            <h4 class="text-lg font-medium mt-4 mb-2">Requirements</h4>
-            <p class="text-gray-600">${job.requirements}</p>
-            
-            <div class="mt-4">
-                <h4 class="text-lg font-medium mb-2">Required Skills</h4>
-                <div class="flex flex-wrap gap-2">
-                    ${job.skills.map(skill => `
-                        <span class="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                            ${skill}
-                        </span>
-                    `).join('')}
+            <div class="prose max-w-none">
+                <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                    <h4 class="text-lg font-medium mb-2">Description</h4>
+                    <p class="text-gray-600">${job.description}</p>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                    <h4 class="text-lg font-medium mb-2">Requirements</h4>
+                    <p class="text-gray-600">${job.requirements}</p>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-medium mb-2">Required Skills</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${job.skills.map(skill => `
+                            <span class="px-3 py-1 bg-white rounded-full text-sm border border-gray-200">
+                                ${skill}
+                            </span>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
+            
+            <div class="p-4 bg-academic-warm/5 rounded-lg border border-academic-tertiary/20">
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    Application Deadline: ${formatDate(job.deadline)}
+                </p>
+            </div>
         </div>
-        <div class="mt-4 p-4 bg-gray-50 rounded-md">
-            <p class="text-sm text-gray-600">
-                <i class="fas fa-calendar-alt mr-2"></i>
-                Application Deadline: ${formatDate(job.deadline)}
-            </p>
-        </div>
-        <div class="mt-6 flex justify-end">
-            <button id="applyButton" 
-                onclick="showApplicationModal()"
-                class="px-6 py-2 bg-kfupm-500 text-white rounded-lg hover:bg-kfupm-600 transition-colors">
-                Apply Now
-            </button>
-        </div>
-    </div>
-`;
+    `;
 
-    // Add this before modal.classList.remove('hidden');
+    // Update application status panel
     const userId = localStorage.getItem('loggedInUserId');
     const hasApplied = await checkExistingApplication(jobId, userId);
 
-    // Update the apply button based on application status
-    const applyButton = document.getElementById('applyButton');
-    if (applyButton) {
-        if (hasApplied) {
-            applyButton.textContent = 'Already Applied';
-            applyButton.disabled = true;
-            applyButton.classList.add('opacity-50', 'cursor-not-allowed');
-        } else {
-            applyButton.textContent = 'Apply Now';
-            applyButton.disabled = false;
-            applyButton.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
+    if (hasApplied) {
+        applicationStatus.innerHTML = `
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    <span class="font-medium text-green-800">Application Submitted</span>
+                </div>
+                <p class="text-sm text-green-600">Your application has been submitted for this position.</p>
+            </div>
+        `;
+        // Disable apply button
+        const applyButton = document.getElementById('applyButton');
+        applyButton.textContent = 'Already Applied';
+        applyButton.disabled = true;
+        applyButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+    } else {
+        applicationStatus.innerHTML = `
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="font-medium text-blue-800">Ready to Apply</span>
+                </div>
+                <p class="text-sm text-blue-600">Click the button below to submit your application.</p>
+            </div>
+        `;
+        // Enable apply button
+        const applyButton = document.getElementById('applyButton');
+        applyButton.textContent = 'Apply Now';
+        applyButton.disabled = false;
+        applyButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
     }
 
     modal.classList.remove('hidden');
 };
+
 
 window.closeJobModal = () => {
     debugLog('🔍 Closing job details modal');
