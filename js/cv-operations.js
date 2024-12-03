@@ -59,14 +59,22 @@ export async function saveCV(cvData) {
 }
 
 export async function saveCVToProfile(cvData, selectedTemplate, currentCvId) {
-    debugLog('🎯 Saving CV to profile');
+    debugLog('🎯 Saving CV to profile', { isUpdate: !!currentCvId });
     
     const userId = localStorage.getItem('loggedInUserId');
     if (!userId) {
         throw new Error('No user ID found');
     }
 
-    if (!currentCvId) {
+    // If we have a currentCvId, it's an update
+    if (currentCvId) {
+        const shouldUpdate = confirm('You are about to overwrite an existing CV. Are you sure you want to continue?');
+        if (!shouldUpdate) {
+            debugLog('❌ Update cancelled by user');
+            return { success: false, cancelled: true };
+        }
+    } else {
+        // Generate new ID for new CVs
         currentCvId = `cv_${Date.now()}`;
     }
 
@@ -102,6 +110,7 @@ export async function saveCVToProfile(cvData, selectedTemplate, currentCvId) {
             lastModified: cvToSave.lastModified
         };
 
+        // Replace or add CV reference
         const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
         if (existingIndex > -1) {
             cvList[existingIndex] = cvReference;
@@ -117,6 +126,8 @@ export async function saveCVToProfile(cvData, selectedTemplate, currentCvId) {
         throw error;
     }
 }
+
+
 
 export async function downloadCV(cvPreview, cvData, format = 'pdf') {
     debugLog('📥 Starting CV download', { format });

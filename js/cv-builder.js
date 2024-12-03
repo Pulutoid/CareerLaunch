@@ -46,6 +46,13 @@ function debugLog(message, data = null) {
     }
 }
 
+// At the top of DOMContentLoaded in cv-builder.js
+const urlParams = new URLSearchParams(window.location.search);
+currentCvId = urlParams.get('cvId'); // This will be null for new CVs
+debugLog('🎯 CV Builder Mode:', currentCvId ? 'Editing existing CV' : 'Creating new CV');
+
+
+
 document.addEventListener('DOMContentLoaded', async () => {
     debugLog('🚀 Initializing CV Builder');
 
@@ -86,11 +93,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set up save button listener
     const saveProfileBtn = document.getElementById('saveProfileBtn');
    // Find where saveProfileBtn is set up and replace with:
+// In cv-builder.js, update the saveProfileBtn event listener
 if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', async () => {
         try {
-            await saveCVToProfile(cvData, selectedTemplate, currentCvId);
-            showMessage('message', 'CV saved to your profile!', 'success');
+            const result = await saveCVToProfile(cvData, selectedTemplate, currentCvId);
+            if (result.cancelled) {
+                return; // User cancelled the update
+            }
+            if (result.success) {
+                showMessage('message', currentCvId ? 'CV updated successfully!' : 'CV saved to your profile!', 'success');
+                // Redirect after short delay
+                setTimeout(() => {
+                    window.location.href = 'student-dashboard.html';
+                }, 2000);
+            }
         } catch (error) {
             showMessage('message', 'Error saving CV. Please try again.', 'error');
         }
