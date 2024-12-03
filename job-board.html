@@ -13,20 +13,36 @@
             theme: {
                 extend: {
                     colors: {
-                        'kfupm': {
-                            100: '#dcfce7',
-                            500: '#006B3F',
-                            600: '#005a35',
+                        'academic': {
+                            primary: '#00573C',    // Navy blue
+                            secondary: '#8B4513',   // Brown accent
+                            tertiary: '#dec400',    // Gold accent
+                            light: '#F5F5F5',      // Light background
+                            dark: '#0A1F3D',       // Darker navy
+                            warm: '#FFD700'        // Bright gold
                         }
+                    },
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
                     }
                 }
             }
         }
     </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
+
+    <script src="js/config/tailwind.config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/job-board.js"></script>
 </head>
 
-<body class="min-h-screen bg-gray-50" data-requires-auth="true">
+<body class="min-h-screen bg-academic-light" data-requires-auth="true">
     <!-- Debug Panel -->
     <div id="debugPanel"
         class="hidden mb-4 p-4 bg-yellow-100 rounded text-xs fixed top-0 right-0 m-4 max-w-lg max-h-screen overflow-auto z-50">
@@ -37,27 +53,30 @@
         <pre id="debugLog" class="whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
+    <nav class="bg-academic-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-bold text-kfupm-500">CareerLaunch</a>
+                    <a href="home.html" class="text-2xl font-serif font-bold">
+                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                    </a>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="cv-builder.html" class="text-gray-600 hover:text-kfupm-500">CV Builder</a>
-                    <a href="job-board.html" class="text-gray-600 hover:text-kfupm-500">Job Board</a>
-                    <span class="px-3 py-1 bg-kfupm-100 text-kfupm-700 rounded-full text-sm">Student Account</span>
-                    <span id="userDisplayName" class="text-gray-700"></span>
-                    <button id="toggleDebug"
-                        class="px-3 py-1 text-sm text-gray-600 hover:text-kfupm-500 flex items-center">
-                        <i class="fas fa-bug mr-2"></i>Debug
-                    </button>
+                <div class="flex items-center space-x-8">
+                    <a href="cv-builder.html"
+                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">CV
+                        Builder</a>
+                    <a href="job-board.html"
+                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Job
+                        Search</a>
+                    <span
+                        class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Student
+                        Account</span>
+                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
                     <button onclick="logout()"
-                        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                        class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
                         Logout
                     </button>
                 </div>
-
             </div>
         </div>
     </nav>
@@ -66,25 +85,27 @@
     <div id="message" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"></div>
 
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-6 py-12">
         <!-- Filters Section -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
             <div class="flex flex-wrap gap-4 items-center">
                 <div class="flex-1 min-w-[200px]">
                     <input type="text" id="searchInput" placeholder="Search jobs..."
-                        class="w-full px-4 py-2 border rounded-md focus:ring-kfupm-500 focus:border-kfupm-500">
+                        class="w-full px-4 py-2 border rounded-md focus:ring-academic-tertiary focus:border-academic-tertiary">
                 </div>
                 <select id="departmentFilter"
-                    class="px-4 py-2 border rounded-md focus:ring-kfupm-500 focus:border-kfupm-500">
+                    class="px-4 py-2 border rounded-md focus:ring-academic-tertiary focus:border-academic-tertiary">
                     <option value="">All Departments</option>
                 </select>
-                <select id="typeFilter" class="px-4 py-2 border rounded-md focus:ring-kfupm-500 focus:border-kfupm-500">
+                <select id="typeFilter"
+                    class="px-4 py-2 border rounded-md focus:ring-academic-tertiary focus:border-academic-tertiary">
                     <option value="">All Types</option>
                     <option value="full-time">Full Time</option>
                     <option value="part-time">Part Time</option>
                     <option value="internship">Internship</option>
                 </select>
-                <button id="clearFilters" class="px-4 py-2 text-gray-600 hover:text-kfupm-500">
+                <button id="clearFilters"
+                    class="px-4 py-2 text-gray-600 hover:text-academic-tertiary transition-colors">
                     <i class="fas fa-undo mr-2"></i>Clear Filters
                 </button>
             </div>
@@ -122,7 +143,7 @@
                     Close
                 </button>
                 <button onclick="showApplicationModal()"
-                    class="px-4 py-2 bg-kfupm-500 text-white rounded-md hover:bg-kfupm-600">
+                    class="px-4 py-2 bg-academic-primary  text-white rounded-md hover:bg-academic-dark ">
                     Apply Now
                 </button>
             </div>
@@ -143,13 +164,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Cover Letter</label>
                     <textarea id="coverLetter" rows="6"
-                        class="mt-1 block w-full border rounded-md shadow-sm focus:ring-kfupm-500 focus:border-kfupm-500"
+                        class="mt-1 block w-full border rounded-md shadow-sm focus:ring-academic-primary  focus:border-academic-primary "
                         placeholder="Why are you interested in this position?"></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Select CV</label>
                     <select id="cvSelect"
-                        class="mt-1 block w-full border rounded-md shadow-sm focus:ring-kfupm-500 focus:border-kfupm-500">
+                        class="mt-1 block w-full border rounded-md shadow-sm focus:ring-academic-primary  focus:border-academic-primary ">
                         <!-- CVs will be populated dynamically -->
                     </select>
                 </div>
@@ -158,7 +179,8 @@
                         class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-kfupm-500 text-white rounded-md hover:bg-kfupm-600">
+                    <button type="submit"
+                        class="px-4 py-2 bg-academic-primary  text-white rounded-md hover:bg-academic-dark ">
                         Submit Application
                     </button>
                 </div>
@@ -166,9 +188,15 @@
         </div>
     </div>
 
-    <script src="js/config/tailwind.config.js"></script>
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/job-board.js"></script>
+    <footer class="bg-academic-primary text-white mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-6">
+            <div class="text-center text-academic-tertiary/90">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+
 </body>
 
 </html>
