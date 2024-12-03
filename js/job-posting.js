@@ -1,3 +1,5 @@
+// job-posting.js
+
 import { auth, db, showMessage } from './auth.js';
 import { doc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
@@ -19,15 +21,15 @@ function debugLog(message, data = null) {
 // Initialize job posting functionality
 export function initializeJobPosting() {
     debugLog('🚀 Initializing job posting module');
-    
+
     const modal = document.getElementById('postJobModal');
     const form = document.getElementById('jobPostForm');
-    
+
     debugLog('📝 Checking required elements', {
         modalFound: !!modal,
         formFound: !!form
     });
-    
+
     if (!modal || !form) {
         debugLog('❌ Required elements not found');
         return;
@@ -106,7 +108,7 @@ export function initializeJobPosting() {
             debugLog('💾 Saving job posting to Firestore');
             const jobsRef = collection(db, 'jobs');
             const docRef = await addDoc(jobsRef, formData);
-            
+
             debugLog('✅ Job posted successfully', { jobId: docRef.id });
             showMessage('message', 'Job posted successfully!', 'success');
 
@@ -160,9 +162,9 @@ function validateJobPost(data) {
         }
     }
 
-    debugLog('Validation results', { 
-        valid: errors.length === 0, 
-        errors 
+    debugLog('Validation results', {
+        valid: errors.length === 0,
+        errors
     });
 
     return errors;

@@ -1,8 +1,8 @@
 // job-board.js
 import { auth, db, showMessage } from './auth.js';
-import { 
-    collection, query, where, orderBy, getDocs, addDoc, 
-    serverTimestamp, doc, getDoc 
+import {
+    collection, query, where, orderBy, getDocs, addDoc,
+    serverTimestamp, doc, getDoc, updateDoc, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 // Debug utility (enhanced version)
@@ -15,7 +15,7 @@ function debugLog(message, data = null, type = 'info') {
         error: '❌',
         loading: '🔄'
     }[type] || '📘';
-    
+
     const logEntry = `${emoji} [JobBoard] ${message}`;
     console.log(logEntry, data ? data : '');
 
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check authentication
     const userId = localStorage.getItem('loggedInUserId');
     const accountType = localStorage.getItem('accountType');
-    
+
     debugLog('Checking user credentials', { userId, accountType });
 
     if (!userId || accountType !== 'student') {
@@ -150,7 +150,7 @@ function initializeDebugPanel() {
 async function loadJobs() {
     debugLog('📥 Loading jobs from Firestore', null, 'loading');
     const jobsGrid = document.getElementById('jobsGrid');
-    
+
     try {
         // Simple query for all active jobs - no employer filter
         const jobsQuery = query(
@@ -160,7 +160,7 @@ async function loadJobs() {
 
         debugLog('🔍 Executing jobs query', { query: 'status == active' });
         const querySnapshot = await getDocs(jobsQuery);
-        
+
         // Clear loading state and cache
         jobsGrid.innerHTML = '';
         jobsCache = [];
@@ -199,13 +199,13 @@ async function loadJobs() {
 
             jobsCache.push(job);
             if (job.department) departments.add(job.department);
-            
-            debugLog('🏢 Processing job', { 
-                id: job.id, 
+
+            debugLog('🏢 Processing job', {
+                id: job.id,
                 title: job.title,
-                company: job.companyName 
+                company: job.companyName
             });
-            
+
             jobsGrid.appendChild(createJobCard(job));
         });
 
@@ -281,52 +281,77 @@ async function loadUserCVs() {
 window.viewJobDetails = async (jobId) => {
     debugLog('🔍 Viewing job details', { jobId });
     currentJobId = jobId;
-    
+
     const job = jobsCache.find(j => j.id === jobId);
     if (!job) return;
 
     const modal = document.getElementById('jobDetailsModal');
     const content = document.getElementById('modalContent');
-    
+
     document.getElementById('modalJobTitle').textContent = job.title;
     content.innerHTML = `
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-lg font-medium">${job.companyName}</p>
-                    <p class="text-gray-600">${job.department} • ${job.location}</p>
-                </div>
-                <span class="px-3 py-1 rounded-full ${getJobTypeStyle(job.employmentType)}">
-                    ${job.employmentType}
-                </span>
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-lg font-medium">${job.companyName}</p>
+                <p class="text-gray-600">${job.department} • ${job.location}</p>
             </div>
-            <div class="prose max-w-none">
-                <h4 class="text-lg font-medium mb-2">Description</h4>
-                <p class="text-gray-600">${job.description}</p>
-                
-                <h4 class="text-lg font-medium mt-4 mb-2">Requirements</h4>
-                <p class="text-gray-600">${job.requirements}</p>
-                
-                <div class="mt-4">
-                    <h4 class="text-lg font-medium mb-2">Required Skills</h4>
-                    <div class="flex flex-wrap gap-2">
-                        ${job.skills.map(skill => `
-                            <span class="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                                ${skill}
-                            </span>
-                        `).join('')}
-                    </div>
+            <span class="px-3 py-1 rounded-full ${getJobTypeStyle(job.employmentType)}">
+                ${job.employmentType}
+            </span>
+        </div>
+        <div class="prose max-w-none">
+            <h4 class="text-lg font-medium mb-2">Description</h4>
+            <p class="text-gray-600">${job.description}</p>
+            
+            <h4 class="text-lg font-medium mt-4 mb-2">Requirements</h4>
+            <p class="text-gray-600">${job.requirements}</p>
+            
+            <div class="mt-4">
+                <h4 class="text-lg font-medium mb-2">Required Skills</h4>
+                <div class="flex flex-wrap gap-2">
+                    ${job.skills.map(skill => `
+                        <span class="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                            ${skill}
+                        </span>
+                    `).join('')}
                 </div>
-            </div>
-            <div class="mt-4 p-4 bg-gray-50 rounded-md">
-                <p class="text-sm text-gray-600">
-                    <i class="fas fa-calendar-alt mr-2"></i>
-                    Application Deadline: ${formatDate(job.deadline)}
-                </p>
             </div>
         </div>
-    `;
-    
+        <div class="mt-4 p-4 bg-gray-50 rounded-md">
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-calendar-alt mr-2"></i>
+                Application Deadline: ${formatDate(job.deadline)}
+            </p>
+        </div>
+        <div class="mt-6 flex justify-end">
+            <button id="applyButton" 
+                onclick="showApplicationModal()"
+                class="px-6 py-2 bg-kfupm-500 text-white rounded-lg hover:bg-kfupm-600 transition-colors">
+                Apply Now
+            </button>
+        </div>
+    </div>
+`;
+
+    // Add this before modal.classList.remove('hidden');
+    const userId = localStorage.getItem('loggedInUserId');
+    const hasApplied = await checkExistingApplication(jobId, userId);
+
+    // Update the apply button based on application status
+    const applyButton = document.getElementById('applyButton');
+    if (applyButton) {
+        if (hasApplied) {
+            applyButton.textContent = 'Already Applied';
+            applyButton.disabled = true;
+            applyButton.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            applyButton.textContent = 'Apply Now';
+            applyButton.disabled = false;
+            applyButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
     modal.classList.remove('hidden');
 };
 
@@ -337,9 +362,17 @@ window.closeJobModal = () => {
 };
 
 window.showApplicationModal = () => {
-    debugLog('📝 Showing application modal');
+    debugLog('📝 Showing application modal', { currentJobId });
+    const applicationModal = document.getElementById('applicationModal');
+    if (!applicationModal) {
+        debugLog('❌ Application modal not found');
+        return;
+    }
+
+    // Store the job ID in the modal's dataset
+    applicationModal.dataset.jobId = currentJobId;
     closeJobModal();
-    document.getElementById('applicationModal').classList.remove('hidden');
+    applicationModal.classList.remove('hidden');
 };
 
 window.closeApplicationModal = () => {
@@ -350,11 +383,23 @@ window.closeApplicationModal = () => {
 
 async function handleApplicationSubmit(event) {
     event.preventDefault();
-    debugLog('📤 Submitting application');
+    debugLog('📤 Starting application submission process');
+
+    const applicationModal = document.getElementById('applicationModal');
+    const jobId = applicationModal?.dataset.jobId;
+    if (!jobId) {
+        debugLog('❌ No job ID found for application', null, 'error');
+        showMessage('message', 'Error: Job details not found. Please try again.', 'error');
+        return;
+    }
 
     const coverLetter = document.getElementById('coverLetter').value.trim();
     const cvId = document.getElementById('cvSelect').value;
 
+    const userId = localStorage.getItem('loggedInUserId');
+    const userName = localStorage.getItem('username');
+
+    // Validation
     if (!coverLetter) {
         showMessage('message', 'Please write a cover letter', 'error');
         return;
@@ -366,31 +411,45 @@ async function handleApplicationSubmit(event) {
     }
 
     try {
-        const userId = localStorage.getItem('loggedInUserId');
-        const job = jobsCache.find(j => j.id === currentJobId);
+        debugLog('🔍 Finding job details', { jobId: jobId });
+        const job = jobsCache.find(j => j.id === jobId);
+        if (!job) {
+            throw new Error('Job details not found');
+        }
 
+        // Create application object
         const application = {
-            jobId: currentJobId,
+            jobId: jobId,
+            jobTitle: job.title,
             userId: userId,
+            userName: userName,
             employerId: job.employerId,
+            companyName: job.companyName,
             coverLetter: coverLetter,
             cvId: cvId,
             status: 'pending',
             createdAt: serverTimestamp(),
-            jobTitle: job.title,
-            companyName: job.companyName
+            lastUpdated: serverTimestamp()
         };
 
         debugLog('💾 Saving application to Firestore', application);
-        await addDoc(collection(db, "applications"), application);
+        const applicationRef = await addDoc(collection(db, "applications"), application);
 
+        // Update job's applications array
+        const jobRef = doc(db, "jobs", jobId);
+        await updateDoc(jobRef, {
+            applications: arrayUnion(applicationRef.id)
+        });
+
+        // Update user's applications array
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, {
+            applications: arrayUnion(applicationRef.id)
+        });
+
+        debugLog('✅ Application submitted successfully');
         showMessage('message', 'Application submitted successfully!', 'success');
         closeApplicationModal();
-
-        // Refresh the applications list in the dashboard if we're on that page
-        if (typeof loadRecentApplications === 'function') {
-            await loadRecentApplications();
-        }
 
     } catch (error) {
         debugLog('❌ Error submitting application', error);
@@ -400,17 +459,17 @@ async function handleApplicationSubmit(event) {
 
 function filterJobs() {
     debugLog('🔍 Filtering jobs');
-    
+
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const department = document.getElementById('departmentFilter').value;
     const type = document.getElementById('typeFilter').value;
 
     const filteredJobs = jobsCache.filter(job => {
-        const matchesSearch = !searchTerm || 
+        const matchesSearch = !searchTerm ||
             job.title.toLowerCase().includes(searchTerm) ||
             job.description.toLowerCase().includes(searchTerm) ||
             job.companyName.toLowerCase().includes(searchTerm);
-            
+
         const matchesDepartment = !department || job.department === department;
         const matchesType = !type || job.employmentType === type;
 
@@ -424,11 +483,11 @@ function filterJobs() {
 
 function clearFilters() {
     debugLog('🧹 Clearing filters');
-    
+
     document.getElementById('searchInput').value = '';
     document.getElementById('departmentFilter').value = '';
     document.getElementById('typeFilter').value = '';
-    
+
     filterJobs();
 }
 
@@ -436,8 +495,8 @@ function populateDepartmentFilter(departments) {
     const filter = document.getElementById('departmentFilter');
     if (!filter) return;
 
-    filter.innerHTML = '<option value="">All Departments</option>' + 
-        Array.from(departments).sort().map(dept => 
+    filter.innerHTML = '<option value="">All Departments</option>' +
+        Array.from(departments).sort().map(dept =>
             `<option value="${dept}">${dept}</option>`
         ).join('');
 }
@@ -462,6 +521,26 @@ function formatDate(timestamp) {
     );
 }
 
+async function checkExistingApplication(jobId, userId) {
+    debugLog('🔍 Checking for existing application', { jobId, userId });
+
+    try {
+        const q = query(
+            collection(db, "applications"),
+            where("jobId", "==", jobId),
+            where("userId", "==", userId)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const hasApplied = !querySnapshot.empty;
+
+        debugLog(`${hasApplied ? '⚠️ Found' : '✅ No'} existing application`);
+        return hasApplied;
+    } catch (error) {
+        debugLog('❌ Error checking existing application', error);
+        return false;
+    }
+}
 
 
 // Utility function for debouncing
