@@ -2,6 +2,7 @@
 import { auth, db, checkAuth, showMessage } from './auth.js';
 import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { saveCV } from './cv-operations.js';
+import { generateCVPreview } from './cv-preview.js';
 // Add html2pdf library
 const html2pdfScript = document.createElement('script');
 html2pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -191,7 +192,8 @@ async function loadPreview() {
         }
 
         // Generate preview based on updated data
-        const previewHTML = generateCVPreview();
+        const previewHTML = generateCVPreview(cvData, selectedTemplate);
+        
         
    // Update the container.innerHTML part in loadPreview
 container.innerHTML = `
@@ -512,169 +514,8 @@ function addExperienceField() {
     container.appendChild(newField);
 }
 
-function generateEducationHTML() {
-    if (!cvData.education || cvData.education.length === 0) {
-        return '<p class="text-gray-600">No education entries yet</p>';
-    }
-
-    return cvData.education.map(edu => `
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800">${edu.degree || 'Degree'}</h3>
-        <p class="text-gray-600">${edu.institution || 'Institution'}</p>
-        <div class="flex justify-between text-sm text-gray-500">
-          <span>${edu.gradYear || 'Year'}</span>
-          <span>GPA: ${edu.gpa || 'N/A'}</span>
-        </div>
-      </div>
-    `).join('');
-}
 
 
-function generateExperienceHTML() {
-    if (!cvData.experience || cvData.experience.length === 0) {
-        return '<p class="text-gray-600">No experience entries yet</p>';
-    }
-
-    return cvData.experience.map(exp => `
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800">${exp.position || 'Position'}</h3>
-        <p class="text-gray-600">${exp.company || 'Company'}</p>
-        <p class="text-sm text-gray-500">${exp.duration || 'Duration'}</p>
-        <p class="mt-2 text-gray-700">${exp.description || 'Description'}</p>
-      </div>
-    `).join('');
-}
-
-function generateSkillsHTML() {
-    const technicalSkills = cvData.skills?.technical || [];
-    const softSkills = cvData.skills?.soft || [];
-    
-    if (technicalSkills.length === 0 && softSkills.length === 0) {
-        return '<p class="text-gray-600">No skills listed yet</p>';
-    }
-
-    let html = '';
-    
-    if (technicalSkills.length > 0) {
-        html += `
-            <div class="mb-4">
-                <h3 class="text-lg font-medium mb-2">Technical Skills</h3>
-                <div class="flex flex-wrap gap-2">
-                    ${technicalSkills.map(skill => `
-                        <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">${skill}</span>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    if (softSkills.length > 0) {
-        html += `
-            <div>
-                <h3 class="text-lg font-medium mb-2">Soft Skills</h3>
-                <div class="flex flex-wrap gap-2">
-                    ${softSkills.map(skill => `
-                        <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">${skill}</span>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    return html;
-}
-
-function generateCVPreview() {
-    debugLog('🎨 Generating CV Preview', {
-        template: selectedTemplate,
-        hasPersonalInfo: !!cvData.personalInfo,
-        hasEducation: (cvData.education || []).length,
-        hasExperience: (cvData.experience || []).length,
-        hasSkills: cvData.skills?.technical?.length || cvData.skills?.soft?.length
-    });
-    
-    const templateStyles = {
-        professional: {
-            containerClass: 'max-w-4xl mx-auto font-sans bg-white shadow-lg rounded-lg overflow-hidden',
-            headerClass: 'bg-gray-800 text-white p-6',
-            sectionClass: 'mb-8',
-            titleClass: 'text-2xl font-bold text-gray-800 mb-2',
-            subtitleClass: 'text-lg font-medium mt-2',
-            textClass: 'text-gray-600',
-        },
-        academic: {
-            containerClass: 'max-w-4xl mx-auto font-serif bg-white shadow-lg rounded-lg overflow-hidden',
-            headerClass: 'bg-academic-primary text-white p-6',
-            sectionClass: 'mb-8',
-            titleClass: 'text-2xl font-bold text-academic-primary mb-2',
-            subtitleClass: 'text-lg font-medium mt-2',
-            textClass: 'text-gray-600',
-        },
-        creative: {
-            containerClass: 'max-w-4xl mx-auto font-sans bg-white shadow-lg rounded-lg overflow-hidden',
-            headerClass: 'bg-gradient-to-r from-academic-tertiary to-academic-secondary text-white p-6',
-            sectionClass: 'mb-8',
-            titleClass: 'text-2xl font-bold text-academic-tertiary mb-2',
-            subtitleClass: 'text-lg font-medium mt-2',
-            textClass: 'text-gray-600',
-        },
-    };
-
-    const style = templateStyles[selectedTemplate];
-
-    return `
-      <div class="${style.containerClass}">
-        <header class="${style.headerClass}">
-          <div class="flex justify-between items-center">
-            <div>
-              <h1 class="text-3xl font-bold">${cvData.personalInfo.fullName || 'Your Name'}</h1>
-              <p class="${style.subtitleClass}">${cvData.personalInfo.title || 'Professional Title'}</p>
-            </div>
-            <div class="text-right">
-              <p class="mb-1">${cvData.personalInfo.email || 'email@example.com'}</p>
-              <p>${cvData.personalInfo.phone || 'Phone Number'}</p>
-            </div>
-          </div>
-        </header>
-  
-        <main class="p-6">
-          <!-- Summary Section -->
-          <section class="${style.sectionClass}">
-            <h2 class="${style.titleClass}">Summary</h2>
-            <p class="${style.textClass}">${cvData.personalInfo.summary || 'A brief summary of your professional profile'}</p>
-          </section>
-  
-          <!-- Education Section -->
-          <section class="${style.sectionClass}">
-            <h2 class="${style.titleClass}">Education</h2>
-            <div class="space-y-4">
-              ${generateEducationHTML(style)}
-            </div>
-          </section>
-  
-          <!-- Experience Section -->
-          <section class="${style.sectionClass}">
-            <h2 class="${style.titleClass}">Experience</h2>
-            <div class="space-y-4">
-              ${generateExperienceHTML(style)}
-            </div>
-          </section>
-  
-          <!-- Skills Section -->
-          <section class="${style.sectionClass}">
-            <h2 class="${style.titleClass}">Skills</h2>
-            <div class="flex flex-wrap gap-2">
-              ${generateSkillsHTML()}
-            </div>
-          </section>
-        </main>
-  
-        <footer class="bg-gray-900 text-white text-center py-4">
-          <p>&copy; ${new Date().getFullYear()} ${cvData.personalInfo.fullName || 'Your Name'}. All rights reserved.</p>
-        </footer>
-      </div>
-    `;
-}
 
 
 // Find the saveFormData() function and update it
@@ -821,65 +662,6 @@ function addCertificationField() {
     container.appendChild(newField);
 }
 
-// async function saveCVToProfile() {
-//     debugLog('🎯 Attempting to save CV to profile');
-    
-//     const userId = localStorage.getItem('loggedInUserId');
-//     if (!userId) {
-//         debugLog('❌ No user ID found');
-//         showMessage('message', 'Please log in to save your CV', 'error');
-//         return;
-//     }
-
-//     try {
-//         if (!currentCvId) {
-//             currentCvId = `cv_${Date.now()}`;
-//         }
-
-//         const formData = await saveFormData(); // This gets the current form data
-//         const cvToSave = {
-//             id: currentCvId,
-//             name: `${formData.personalInfo?.fullName || 'Untitled'} CV - ${new Date().toLocaleDateString()}`,
-//             template: selectedTemplate,
-//             ...formData
-//         };
-
-//         debugLog('📝 Saving CV data', cvToSave);
-
-//         await setDoc(doc(db, "cvs", currentCvId), cvToSave);
-
-//         const userRef = doc(db, "users", userId);
-//         const userDoc = await getDoc(userRef);
-//         const userData = userDoc.data();
-
-//         const cvList = userData.cvs || [];
-//         const existingIndex = cvList.findIndex(cv => cv.id === currentCvId);
-
-//         if (existingIndex > -1) {
-//             cvList[existingIndex] = {
-//                 id: currentCvId,
-//                 name: cvToSave.name,
-//                 lastModified: cvToSave.lastModified
-//             };
-//         } else {
-//             cvList.push({
-//                 id: currentCvId,
-//                 name: cvToSave.name,
-//                 lastModified: cvToSave.lastModified
-//             });
-//         }
-
-//         await updateDoc(userRef, { cvs: cvList });
-
-//         debugLog('✅ CV saved successfully');
-//         showMessage('message', 'CV saved to your profile!', 'success');
-
-//     } catch (error) {
-//         debugLog('❌ Error saving CV', error);
-//         showMessage('message', 'Error saving CV. Please try again.', 'error');
-//     }
-// }
-
 async function saveCVToProfile() {
     debugLog('🎯 Attempting to save CV to profile');
     
@@ -891,7 +673,6 @@ async function saveCVToProfile() {
     }
 
     try {
-        // Generate CV ID if not exists
         if (!currentCvId) {
             currentCvId = `cv_${Date.now()}`;
         }
@@ -902,12 +683,16 @@ async function saveCVToProfile() {
             throw new Error('Failed to collect form data');
         }
 
-        // Prepare CV data
+        // Clean and prepare the CV data
         const cvToSave = {
             id: currentCvId,
             name: `${formData.personalInfo?.fullName || 'Untitled'} CV - ${new Date().toLocaleDateString()}`,
             template: selectedTemplate,
-            data: formData, // Nest the form data
+            personalInfo: formData.personalInfo || {},
+            education: formData.education || [],
+            experience: formData.experience || [],
+            skills: formData.skills || { technical: [], soft: [] },
+            certifications: formData.certifications || [],
             lastModified: new Date().toISOString(),
             userId: userId // Add user reference
         };
@@ -953,6 +738,7 @@ async function saveCVToProfile() {
         showMessage('message', 'Error saving CV. Please try again.', 'error');
     }
 }
+
 
 // Add to window object
 window.addCertificationField = addCertificationField;
