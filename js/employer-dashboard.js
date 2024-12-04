@@ -226,6 +226,158 @@ async function loadJobListings(employerId) {
     }
 }
 
+async function loadJobApplications(jobId) {
+    debugLog('📨 Loading applications for job', { jobId });
+    const container = document.getElementById('applicationsContainer');
+
+    try {
+        const applicationsQuery = query(
+            collection(db, "applications"),
+            where("jobId", "==", jobId)
+        );
+
+        const querySnapshot = await getDocs(applicationsQuery);
+
+        if (querySnapshot.empty) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <p class="mb-2">No applications received yet</p>
+                    <p class="text-sm">Applications will appear here once students apply</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        querySnapshot.forEach(doc => {
+            const application = doc.data();
+            container.innerHTML += `
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h5 class="font-medium text-gray-900">${application.userName || 'Anonymous'}</h5>
+                            <p class="text-sm text-gray-500">Applied: ${formatDate(application.createdAt)}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded-full ${getApplicationStatusStyle(application.status)}">
+                            ${application.status}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2 line-clamp-3">${application.coverLetter || 'No cover letter provided'}</p>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="viewCV('${application.cvId}')" 
+                            class="text-sm text-academic-tertiary hover:text-academic-primary">
+                            <i class="fas fa-file-alt mr-1"></i> View CV
+                        </button>
+                        <button onclick="updateApplicationStatus('${doc.id}')" 
+                            class="text-sm text-academic-tertiary hover:text-academic-primary">
+                            <i class="fas fa-edit mr-1"></i> Update Status
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+    } catch (error) {
+        debugLog('❌ Error loading applications:', error);
+        container.innerHTML = `
+            <div class="text-center text-red-500">
+                Error loading applications. Please try again.
+            </div>`;
+    }
+}
+
+function getApplicationStatusStyle(status) {
+    const styles = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'reviewing': 'bg-blue-100 text-blue-800',
+        'accepted': 'bg-green-100 text-green-800',
+        'rejected': 'bg-red-100 text-red-800'
+    };
+    return styles[status?.toLowerCase()] || 'bg-gray-100 text-gray-600';
+}
+
+// Update the viewJobDetails function to also load applications
+window.viewJobDetails = async (jobId) => {
+    debugLog('🔍 Viewing job details', { jobId });
+    const modal = document.getElementById('jobDetailsModal');
+    const content = document.getElementById('modalContent');
+
+    try {
+        const jobDoc = await getDoc(doc(db, "jobs", jobId));
+        if (!jobDoc.exists()) {
+            throw new Error('Job not found');
+        }
+
+        const job = jobDoc.data();
+        document.getElementById('modalJobTitle').textContent = job.title;
+
+        // Update job details panel
+        content.innerHTML = `
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Overview</h4>
+                    <div class="mt-2 flex flex-wrap gap-4">
+                        <span class="text-sm text-gray-600">
+                            <i class="fas fa-building mr-1"></i> ${job.department}
+                        </span>
+                        <span class="text-sm text-gray-600">
+                            <i class="fas fa-map-marker-alt mr-1"></i> ${job.location}
+                        </span>
+                        <span class="text-sm text-gray-600">
+                            <i class="fas fa-clock mr-1"></i> ${job.employmentType}
+                        </span>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Description</h4>
+                    <p class="mt-2 text-gray-600">${job.description}</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Requirements</h4>
+                    <p class="mt-2 text-gray-600">${job.requirements}</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Required Skills</h4>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        ${job.skills.map(skill => `
+                            <span class="px-3 py-1 bg-academic-warm/10 text-academic-primary rounded-full text-sm">
+                                ${skill}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">
+                            Posted: ${formatDate(job.createdAt)}
+                        </span>
+                        <span class="text-sm text-gray-500">
+                            Deadline: ${formatDate(job.deadline)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Load applications
+        await loadJobApplications(jobId);
+
+        // Show modal
+        modal.classList.remove('hidden');
+
+    } catch (error) {
+        debugLog('❌ Error loading job details:', error);
+        showMessage('message', 'Error loading job details', 'error');
+    }
+};
+
+window.closeJobModal = () => {
+    document.getElementById('jobDetailsModal').classList.add('hidden');
+};
+
 
 async function loadRecentApplications(employerId) {
     debugLog('Loading recent applications');
@@ -316,7 +468,7 @@ function initializeApplicationTrendsChart(employerId) {
 
 function setupEventListeners() {
     debugLog('🎯 Setting up event listeners');
-    
+
     // Post new job button
     const postJobBtn = document.getElementById('postJobBtn');
     if (postJobBtn) {
@@ -372,18 +524,18 @@ function getStatusStyle(status) {
 // Add this as a window function so it can be called from HTML
 window.toggleJobStatus = async (jobId, currentStatus) => {
     debugLog('🔄 Toggling job status', { jobId, currentStatus });
-    
+
     try {
         const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
         await updateDoc(doc(db, "jobs", jobId), {
             status: newStatus,
             lastUpdated: serverTimestamp()
         });
-        
+
         // Refresh the listings
         const employerId = localStorage.getItem('loggedInUserId');
         await loadJobListings(employerId, 'all');
-        
+
         debugLog('✅ Job status updated successfully');
     } catch (error) {
         debugLog('❌ Error toggling job status', error);
