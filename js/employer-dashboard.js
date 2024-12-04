@@ -318,11 +318,13 @@ function getApplicationStatusStyle(status) {
     const styles = {
         'pending': 'bg-yellow-100 text-yellow-800',
         'reviewing': 'bg-blue-100 text-blue-800',
+        'interview_requested': 'bg-purple-100 text-purple-800',  // Added this line
         'accepted': 'bg-green-100 text-green-800',
         'rejected': 'bg-red-100 text-red-800'
     };
     return styles[status?.toLowerCase()] || 'bg-gray-100 text-gray-600';
 }
+
 
 // Update the viewJobDetails function to also load applications
 window.viewJobDetails = async (jobId) => {
@@ -567,15 +569,24 @@ document.getElementById('interviewRequestForm').addEventListener('submit', async
             lastUpdated: serverTimestamp()
         };
 
-        debugLog('💾 Creating interview request', interviewData);
-
         const interviewRef = await addDoc(collection(db, "interviews"), interviewData);
 
-        // Update application
+        // Update application status and add interview reference
         await updateDoc(doc(db, "applications", currentInterviewData.applicationId), {
             hasInterviewRequest: true,
-            lastUpdated: serverTimestamp()
+            status: 'interview_requested',
+            lastUpdated: serverTimestamp(),
+            interviewId: interviewRef.id
         });
+
+        // Update the status badge in the UI immediately
+        const statusBadge = document.querySelector(`[data-application-id="${currentInterviewData.applicationId}"] .status-badge`);
+        if (statusBadge) {
+            statusBadge.className = `px-2 py-1 text-xs rounded-full ${getApplicationStatusStyle('interview_requested')}`;
+            statusBadge.textContent = 'Interview Requested';
+        }
+
+        debugLog('✅ Updated application status to interview_requested', { applicationId: currentInterviewData.applicationId });
 
         // Success handling - ADDED HERE instead of in catch block
         debugLog('✅ Interview request created successfully', { interviewId: interviewRef.id });
