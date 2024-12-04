@@ -5,7 +5,6 @@ import {
     query, where, orderBy, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { initializeJobPosting } from './job-posting.js';
-
 // Debug utilities
 const DEBUG = true;
 function debugLog(message, data = null) {
@@ -263,7 +262,7 @@ async function loadJobApplications(jobId) {
                     </div>
                     <p class="text-sm text-gray-600 mt-2 line-clamp-3">${application.coverLetter || 'No cover letter provided'}</p>
                     <div class="mt-3 flex gap-2">
-                        <button onclick="viewCV('${application.cvId}')" 
+                        <button onclick="viewCV('${application.cvId}', '${doc.id}')" 
                             class="text-sm text-academic-tertiary hover:text-academic-primary">
                             <i class="fas fa-file-alt mr-1"></i> View CV
                         </button>
@@ -375,10 +374,49 @@ window.viewJobDetails = async (jobId) => {
 };
 
 window.closeJobModal = () => {
+    debugLog('🔍 Closing job modal');
+    document.getElementById('jobDetailsModal').classList.add('hidden');
+    document.getElementById('applicationModal').classList.add('hidden'); // Also close application modal if open
+};
+
+// Close the job details modal
+window.closeJobDetailsModal = () => {
+    debugLog('🔍 Closing job details modal');
     document.getElementById('jobDetailsModal').classList.add('hidden');
 };
 
+// View CV function
+window.viewCV = async (cvId, applicationId = null) => {
+    debugLog('📄 Opening CV viewer', { cvId, applicationId });
 
+    try {
+        // Verify CV exists first
+        const cvDoc = await getDoc(doc(db, "cvs", cvId));
+        if (!cvDoc.exists()) {
+            debugLog('❌ CV not found', { cvId });
+            showMessage('message', 'CV not found', 'error');
+            return;
+        }
+
+        // Build URL with both CV and application context
+        let cvViewerUrl = `cv-viewer.html?cvId=${cvId}`;
+        if (applicationId) {
+            cvViewerUrl += `&applicationId=${applicationId}`;
+        }
+
+        // Open in new tab
+        const newWindow = window.open(cvViewerUrl, '_blank');
+        if (!newWindow) {
+            debugLog('⚠️ Popup blocked, showing fallback message');
+            showMessage('message', 'Please allow popups to view CV', 'warning');
+        }
+
+        debugLog('✅ CV viewer opened', { cvId, applicationId });
+    } catch (error) {
+        debugLog('❌ Error viewing CV', error);
+        showMessage('message', 'Error loading CV', 'error');
+    }
+};
 async function loadRecentApplications(employerId) {
     debugLog('Loading recent applications');
 
