@@ -292,49 +292,57 @@ window.viewJobDetails = async (jobId) => {
     document.getElementById('modalJobTitle').textContent = job.title;
 
     // Update job details panel
+    // Update job details panel
     content.innerHTML = `
-        <div class="space-y-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-lg font-medium">${job.companyName}</p>
-                    <p class="text-gray-600">${job.department} • ${job.location}</p>
-                </div>
-                <span class="px-3 py-1 rounded-full ${getJobTypeStyle(job.employmentType)}">
-                    ${job.employmentType}
-                </span>
-            </div>
-            
-            <div class="prose max-w-none">
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h4 class="text-lg font-medium mb-2">Description</h4>
-                    <p class="text-gray-600">${job.description}</p>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h4 class="text-lg font-medium mb-2">Requirements</h4>
-                    <p class="text-gray-600">${job.requirements}</p>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-lg font-medium mb-2">Required Skills</h4>
-                    <div class="flex flex-wrap gap-2">
-                        ${job.skills.map(skill => `
-                            <span class="px-3 py-1 bg-white rounded-full text-sm border border-gray-200">
-                                ${skill}
-                            </span>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="p-4 bg-academic-warm/5 rounded-lg border border-academic-tertiary/20">
-                <p class="text-sm text-gray-600">
-                    <i class="fas fa-calendar-alt mr-2"></i>
-                    Application Deadline: ${formatDate(job.deadline)}
-                </p>
-            </div>
+<div class="space-y-6">
+    <div>
+        <h4 class="text-lg font-medium text-gray-900">Overview</h4>
+        <div class="mt-2 flex flex-wrap gap-4">
+            <span class="text-sm text-gray-600">
+                <i class="fas fa-building mr-1"></i> ${job.department}
+            </span>
+            <span class="text-sm text-gray-600">
+                <i class="fas fa-map-marker-alt mr-1"></i> ${job.location}
+            </span>
+            <span class="text-sm text-gray-600">
+                <i class="fas fa-clock mr-1"></i> ${job.employmentType}
+            </span>
         </div>
-    `;
+    </div>
+    
+    <div>
+        <h4 class="text-lg font-medium text-gray-900">Description</h4>
+        <p class="mt-2 text-gray-600">${job.description}</p>
+    </div>
+    
+    <div>
+        <h4 class="text-lg font-medium text-gray-900">Requirements</h4>
+        <p class="mt-2 text-gray-600">${job.requirements}</p>
+    </div>
+    
+    <div>
+        <h4 class="text-lg font-medium text-gray-900">Required Skills</h4>
+        <div class="mt-2 flex flex-wrap gap-2">
+            ${job.skills.map(skill => `
+                <span class="px-3 py-1 bg-academic-warm/10 text-academic-primary rounded-full text-sm">
+                    ${skill}
+                </span>
+            `).join('')}
+        </div>
+    </div>
+    
+    <div class="pt-4 border-t">
+        <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-500">
+                Posted: ${formatDate(job.createdAt)}
+            </span>
+            <span class="text-sm text-gray-500">
+                Deadline: ${formatDate(job.deadline)}
+            </span>
+        </div>
+    </div>
+</div>
+`;
 
     // Update application status panel
     const userId = localStorage.getItem('loggedInUserId');
