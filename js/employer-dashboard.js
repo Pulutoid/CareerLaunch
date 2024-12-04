@@ -2,7 +2,8 @@
 import { auth, db, checkAuth } from './auth.js';
 import {
     doc, getDoc, collection, getDocs,
-    query, where, orderBy, limit, serverTimestamp
+    query, where, orderBy, limit, serverTimestamp,
+    addDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { initializeJobPosting } from './job-posting.js';
 // Debug utilities
@@ -277,29 +278,31 @@ async function loadJobApplications(jobId) {
         querySnapshot.forEach(doc => {
             const application = doc.data();
             container.innerHTML += `
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h5 class="font-medium text-gray-900">${application.userName || 'Anonymous'}</h5>
-                            <p class="text-sm text-gray-500">Applied: ${formatDate(application.createdAt)}</p>
-                        </div>
-                        <span class="px-2 py-1 text-xs rounded-full ${getApplicationStatusStyle(application.status)}">
-                            ${application.status}
-                        </span>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h5 class="font-medium text-gray-900">${application.userName || 'Anonymous'}</h5>
+                        <p class="text-sm text-gray-500">Applied: ${formatDate(application.createdAt)}</p>
                     </div>
-                    <p class="text-sm text-gray-600 mt-2 line-clamp-3">${application.coverLetter || 'No cover letter provided'}</p>
-                    <div class="mt-3 flex gap-2">
-                        <button onclick="viewCV('${application.cvId}', '${doc.id}')" 
-                            class="text-sm text-academic-tertiary hover:text-academic-primary">
-                            <i class="fas fa-file-alt mr-1"></i> View CV
-                        </button>
-                        <button onclick="updateApplicationStatus('${doc.id}')" 
-                            class="text-sm text-academic-tertiary hover:text-academic-primary">
-                            <i class="fas fa-edit mr-1"></i> Update Status
-                        </button>
-                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full ${getApplicationStatusStyle(application.status)}">
+                        ${application.status}
+                    </span>
                 </div>
-            `;
+                <p class="text-sm text-gray-600 mt-2 line-clamp-3">${application.coverLetter || 'No cover letter provided'}</p>
+                <div class="mt-3 flex gap-2">
+                    <button onclick="viewCV('${application.cvId}', '${doc.id}')" 
+                        class="text-sm text-academic-tertiary hover:text-academic-primary">
+                        <i class="fas fa-file-alt mr-1"></i> View CV
+                    </button>
+                </div>
+             <div class="mt-3 pt-3 border-t border-gray-200">
+    <button onclick="showInterviewModal('${doc.id}', '${application.userId}', '${application.userName}')" 
+        class="w-full py-2 px-4 bg-academic-primary text-white rounded-md hover:bg-academic-dark transition-colors text-sm">
+        <i class="fas fa-calendar-plus mr-1"></i> Schedule Interview
+    </button>
+</div>
+            </div>
+        `;
         });
 
     } catch (error) {
@@ -444,6 +447,166 @@ window.viewCV = async (cvId, applicationId = null) => {
         showMessage('message', 'Error loading CV', 'error');
     }
 };
+
+window.requestInterview = async (applicationId, studentId) => {
+    debugLog('📅 Requesting interview', { applicationId, studentId });
+
+    try {
+        const employerId = localStorage.getItem('loggedInUserId');
+        if (!employerId) {
+            throw new Error('Not authenticated');
+        }
+
+        // Create interview request
+        const interviewData = {
+            applicationId: applicationId,
+            employerId: employerId,
+            studentId: studentId,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            lastUpdated: serverTimestamp()
+        };
+
+        debugLog('💾 Creating interview request', interviewData);
+
+        const interviewRef = await addDoc(collection(db, "interviews"), interviewData);
+
+        // Update application to show interview requested
+        await updateDoc(doc(db, "applications", applicationId), {
+            hasInterviewRequest: true,
+            lastUpdated: serverTimestamp()
+        });
+
+        debugLog('✅ Interview request created successfully', { interviewId: interviewRef.id });
+        showMessage('message', 'Interview request sent successfully!', 'success');
+
+    } catch (error) {
+        debugLog('❌ Error requesting interview', error);
+        showMessage('message', 'Error sending interview request', 'error');
+    }
+};
+
+let currentInterviewData = null;
+
+window.showInterviewModal = (applicationId, studentId, studentName) => {
+    debugLog('🎯 Opening interview modal', { applicationId, studentId, studentName });
+
+    // Store data for form submission
+    currentInterviewData = { applicationId, studentId, studentName };
+
+    // Reset form
+    document.getElementById('interviewRequestForm').reset();
+
+    // Set minimum date to tomorrow for all date inputs
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const minDateTime = tomorrow.toISOString().slice(0, 16);
+
+    document.querySelectorAll('.proposed-date').forEach(input => {
+        input.min = minDateTime;
+    });
+
+    // Show modal
+    document.getElementById('interviewRequestModal').classList.remove('hidden');
+};
+
+window.closeInterviewModal = () => {
+    debugLog('🔍 Closing interview modal');
+
+    // Reset form state
+    const submitBtn = document.getElementById('submitInterviewBtn');
+    const successMsg = document.getElementById('interviewSuccessMessage');
+
+    submitBtn.style.display = 'block';
+    submitBtn.style.opacity = '1';
+    successMsg.classList.add('hidden');
+
+    // Clear form
+    document.getElementById('interviewRequestForm').reset();
+
+    // Hide modal
+    document.getElementById('interviewRequestModal').classList.add('hidden');
+    currentInterviewData = null;
+};
+
+// Add this after your existing event listeners in the DOMContentLoaded section
+document.getElementById('interviewRequestForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    debugLog('📝 Processing interview request submission');
+
+    try {
+        if (!currentInterviewData) {
+            throw new Error('No interview data found');
+        }
+
+        const employerId = localStorage.getItem('loggedInUserId');
+        const companyName = localStorage.getItem('companyName');
+
+        // Collect proposed dates (filter out empty ones)
+        const proposedDates = Array.from(document.querySelectorAll('.proposed-date'))
+            .map(input => input.value)
+            .filter(date => date);
+
+        if (proposedDates.length === 0) {
+            throw new Error('Please provide at least one proposed date');
+        }
+
+        const interviewData = {
+            applicationId: currentInterviewData.applicationId,
+            employerId: employerId,
+            companyName: companyName,
+            studentId: currentInterviewData.studentId,
+            studentName: currentInterviewData.studentName,
+            type: document.getElementById('interviewType').value,
+            proposedDates: proposedDates,
+            duration: parseInt(document.getElementById('interviewDuration').value),
+            location: document.getElementById('interviewLocation').value,
+            notes: document.getElementById('interviewNotes').value,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            lastUpdated: serverTimestamp()
+        };
+
+        debugLog('💾 Creating interview request', interviewData);
+
+        const interviewRef = await addDoc(collection(db, "interviews"), interviewData);
+
+        // Update application
+        await updateDoc(doc(db, "applications", currentInterviewData.applicationId), {
+            hasInterviewRequest: true,
+            lastUpdated: serverTimestamp()
+        });
+
+        // Success handling - ADDED HERE instead of in catch block
+        debugLog('✅ Interview request created successfully', { interviewId: interviewRef.id });
+
+        // Show success state
+        const submitBtn = document.getElementById('submitInterviewBtn');
+        const successMsg = document.getElementById('interviewSuccessMessage');
+
+        // Hide submit button with fade
+        submitBtn.style.opacity = '0';
+        submitBtn.style.transition = 'opacity 0.3s';
+
+        // Show success message after brief delay
+        setTimeout(() => {
+            submitBtn.style.display = 'none';
+            successMsg.classList.remove('hidden');
+            successMsg.style.opacity = '0';
+            successMsg.style.transition = 'opacity 0.3s';
+
+            requestAnimationFrame(() => {
+                successMsg.style.opacity = '1';
+            });
+        }, 300);
+
+    } catch (error) {
+        debugLog('❌ Error creating interview request', error);
+        showMessage('message', error.message || 'Error sending interview request', 'error');
+    }
+});
+
+
 async function loadRecentApplications(employerId) {
     debugLog('Loading recent applications');
 
