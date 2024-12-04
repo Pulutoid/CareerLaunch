@@ -202,7 +202,7 @@ async function loadJobListings(employerId) {
                     ${formatDate(job.createdAt)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                    ${job.applications?.length || 0}
+                    <span id="application-count-${job.id}">...</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusStyle(job.status)}">
@@ -217,11 +217,38 @@ async function loadJobListings(employerId) {
                 </td>
             `;
             table.appendChild(row);
+
+            // Update application count after adding the row
+            updateApplicationCount(job.id);
         });
 
     } catch (error) {
         debugLog('❌ Error loading jobs:', error);
         table.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-red-500">Error loading jobs</td></tr>`;
+    }
+}
+async function updateApplicationCount(jobId) {
+    debugLog('📊 Updating application count', { jobId });
+
+    try {
+        const applicationsQuery = query(
+            collection(db, "applications"),
+            where("jobId", "==", jobId)
+        );
+
+        const querySnapshot = await getDocs(applicationsQuery);
+        const count = querySnapshot.size;
+
+        const countElement = document.getElementById(`application-count-${jobId}`);
+        if (countElement) {
+            countElement.textContent = count;
+            debugLog('✅ Updated application count', { jobId, count });
+        }
+
+        return count;
+    } catch (error) {
+        debugLog('❌ Error updating application count', error);
+        return 0;
     }
 }
 
