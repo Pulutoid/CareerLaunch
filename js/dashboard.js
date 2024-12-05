@@ -1,7 +1,6 @@
 // dashboard.js
 import { auth, db, checkAuth } from './auth.js';
-import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
+import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, deleteDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 // Debug utility
 function debugLog(message, data = null) {
@@ -84,7 +83,7 @@ async function testFirestoreAccess() {
     }
 }
 
-
+let activeInterviewSection = null;
 // Update profile display
 function updateProfileDisplay(userData) {
     debugLog('Updating profile display with user data', userData);
@@ -214,6 +213,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Load user's CVs
         await loadUserCVs(userId);
 
+        // Initialize interview counts and data
+        await loadPendingInterviews();
+        await loadConfirmedInterviews();
+        debugLog('🎯 Initial interview data loaded');
+
     } catch (error) {
         debugLog('Error loading dashboard:', {
             error: error.message,
@@ -223,8 +227,279 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Show debug panel automatically when there's an error
         document.getElementById('debugPanel').classList.remove('hidden');
     }
+
+    const togglePending = document.getElementById('togglePending');
+    const toggleConfirmed = document.getElementById('toggleConfirmed');
+    const pendingSection = document.getElementById('pendingInterviews');
+    const confirmedSection = document.getElementById('confirmedInterviews');
+
+    if (togglePending && toggleConfirmed) {
+        togglePending.addEventListener('click', () => toggleInterviewSection('pending'));
+        toggleConfirmed.addEventListener('click', () => toggleInterviewSection('confirmed'));
+    }
+
+
+
 });
 
+function toggleInterviewSection(section) {
+    debugLog('🔄 Toggling interview section', { section });
+
+    const sections = {
+        pending: {
+            button: document.getElementById('togglePending'),
+            content: document.getElementById('pendingInterviews')
+        },
+        confirmed: {
+            button: document.getElementById('toggleConfirmed'),
+            content: document.getElementById('confirmedInterviews')
+        }
+    };
+
+    if (activeInterviewSection === section) {
+        // Hide section if clicking the active one
+        sections[section].content.classList.add('hidden');
+        sections[section].button.classList.remove('text-academic-primary');
+        activeInterviewSection = null;
+    } else {
+        // Hide all sections first
+        Object.values(sections).forEach(s => {
+            s.content.classList.add('hidden');
+            s.button.classList.remove('text-academic-primary');
+        });
+
+        // Show selected section
+        sections[section].content.classList.remove('hidden');
+        sections[section].button.classList.add('text-academic-primary');
+        activeInterviewSection = section;
+
+        // Load content if needed
+        if (section === 'pending') {
+            loadPendingInterviews();
+        } else {
+            loadConfirmedInterviews();
+        }
+    }
+}
+
+async function loadPendingInterviews() {
+    debugLog('📥 Starting to load pending interviews');
+    const container = document.getElementById('pendingInterviewsList');
+
+    if (!container) {
+        debugLog('❌ pendingInterviewsList container not found in DOM');
+        return;
+    }
+
+    try {
+        const userId = localStorage.getItem('loggedInUserId');
+        debugLog('🔍 Looking for interviews with userId:', userId);
+
+        // Log the query we're about to make
+        debugLog('📊 Creating query with params:', {
+            collection: 'interviews',
+            studentId: userId,
+            status: 'pending'
+        });
+
+        const interviewsQuery = query(
+            collection(db, "interviews"),
+            where("studentId", "==", userId),
+            where("status", "==", "pending")
+        );
+
+        debugLog('🔄 Executing query...');
+        const snapshot = await getDocs(interviewsQuery);
+
+        debugLog('📦 Query results:', {
+            empty: snapshot.empty,
+            size: snapshot.size,
+            docs: snapshot.docs.map(doc => ({
+                id: doc.id,
+                data: doc.data()
+            }))
+        });
+
+        container.innerHTML = '';
+
+        if (snapshot.empty) {
+            debugLog('ℹ️ No pending interviews found');
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-4">
+                    No pending interview requests
+                </div>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const interview = doc.data();
+            debugLog('🎯 Processing interview:', {
+                id: doc.id,
+                companyName: interview.companyName,
+                status: interview.status,
+                data: interview
+            });
+            container.appendChild(createInterviewCard(doc.id, interview, 'pending'));
+        });
+
+        // Update counter
+        const countElement = document.querySelector('.pending-count');
+        if (countElement) {
+            countElement.textContent = snapshot.size;
+            debugLog('🔢 Updated pending count:', snapshot.size);
+        } else {
+            debugLog('❌ Could not find pending-count element');
+        }
+
+    } catch (error) {
+        debugLog('❌ Error loading pending interviews:', {
+            error: error.message,
+            stack: error.stack,
+            code: error.code
+        });
+        container.innerHTML = `
+            <div class="text-center text-red-500 py-4">
+                Error loading interview requests
+            </div>`;
+    }
+}
+
+async function loadConfirmedInterviews() {
+    debugLog('📥 Loading confirmed interviews');
+    const container = document.getElementById('confirmedInterviewsList');
+    if (!container) return;
+
+    try {
+        const userId = localStorage.getItem('loggedInUserId');
+        const interviewsQuery = query(
+            collection(db, "interviews"),
+            where("studentId", "==", userId),
+            where("status", "==", "confirmed")
+        );
+
+        const snapshot = await getDocs(interviewsQuery);
+        container.innerHTML = '';
+
+        if (snapshot.empty) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-4">
+                    No confirmed interviews yet
+                </div>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const interview = doc.data();
+            container.appendChild(createInterviewCard(doc.id, interview, 'confirmed'));
+        });
+
+        // Update counter
+        document.querySelector('.confirmed-count').textContent = snapshot.size;
+
+    } catch (error) {
+        debugLog('❌ Error loading confirmed interviews:', error);
+        container.innerHTML = `
+            <div class="text-center text-red-500 py-4">
+                Error loading confirmed interviews
+            </div>`;
+    }
+}
+
+function createInterviewCard(id, interview, type) {
+    debugLog('🎨 Creating interview card', { id, type, interview });
+
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-lg shadow-sm border border-gray-100 p-6';
+
+    // Get first proposed time or fallback
+    const firstTime = interview.proposedTimes?.[0];
+    const formattedDate = firstTime ? new Date(firstTime).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : 'Time to be determined';
+
+    card.innerHTML = `
+        <div class="flex justify-between items-start">
+            <div>
+                <h4 class="font-medium text-lg text-gray-900">${interview.companyName || 'Company'}</h4>
+                <p class="text-sm text-gray-600">${interview.position || 'Position not specified'}</p>
+                <p class="text-sm text-gray-500 mt-2">
+                    <i class="fas fa-calendar-alt mr-2"></i>${formattedDate}
+                </p>
+                ${interview.location ? `
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-location-dot mr-2"></i>${interview.location}
+                    </p>
+                ` : ''}
+                ${interview.duration ? `
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-clock mr-2"></i>Duration: ${interview.duration} minutes
+                    </p>
+                ` : ''}
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="viewInterviewDetails('${id}')" 
+                    class="px-4 py-2 text-academic-primary border border-academic-primary/20 rounded-lg hover:bg-academic-warm/10 transition-colors">
+                    <i class="fas fa-eye mr-2"></i>View Details
+                </button>
+                ${type === 'pending' ? `
+                    <button onclick="handleInterview('${id}', 'accept')" 
+                        class="px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
+                        Accept
+                    </button>
+                    <button onclick="handleInterview('${id}', 'decline')"
+                        class="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                        Decline
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+        ${interview.notes ? `
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <p class="text-sm text-gray-600">${interview.notes}</p>
+            </div>
+        ` : ''}
+    `;
+
+    return card;
+}
+
+
+
+// Add this function and make it available globally
+window.handleInterview = async (interviewId, action) => {
+    debugLog('🤝 Handling interview action', { interviewId, action });
+
+    try {
+        const interviewRef = doc(db, "interviews", interviewId);
+
+        if (action === 'accept') {
+            await updateDoc(interviewRef, {
+                status: 'confirmed',
+                confirmedAt: serverTimestamp()
+            });
+            debugLog('✅ Interview accepted');
+        } else {
+            await updateDoc(interviewRef, {
+                status: 'declined',
+                declinedAt: serverTimestamp()
+            });
+            debugLog('❌ Interview declined');
+        }
+
+        // Refresh both sections
+        loadPendingInterviews();
+        loadConfirmedInterviews();
+
+    } catch (error) {
+        debugLog('❌ Error handling interview:', error);
+        alert('Error updating interview status. Please try again.');
+    }
+};
 
 function updateDashboardLabels(accountType) {
     console.log(`[Dashboard] Updating dashboard labels for account type: ${accountType}`);
@@ -579,4 +854,152 @@ window.viewApplicationDetails = (applicationId) => {
     debugLog('🔍 Viewing application details', { applicationId });
     // Implement application details modal here
     alert('Application details feature coming soon!');
+};
+
+
+// Add this function to dashboard.js
+window.debugCheckInterviews = async () => {
+    const userId = localStorage.getItem('loggedInUserId');
+    debugLog('🔍 Debug checking interviews for user:', userId);
+
+    try {
+        // Check all interviews regardless of status
+        const allInterviewsQuery = query(
+            collection(db, "interviews")
+        );
+
+        const snapshot = await getDocs(allInterviewsQuery);
+
+        debugLog('📊 All interviews in database:', {
+            total: snapshot.size,
+            interviews: snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+        });
+
+        // Check specifically for user's interviews
+        const userInterviewsQuery = query(
+            collection(db, "interviews"),
+            where("studentId", "==", userId)
+        );
+
+        const userSnapshot = await getDocs(userInterviewsQuery);
+
+        debugLog('👤 User specific interviews:', {
+            total: userSnapshot.size,
+            interviews: userSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+        });
+
+    } catch (error) {
+        debugLog('❌ Error during interview debug check:', {
+            error: error.message,
+            stack: error.stack
+        });
+    }
+};
+
+// Add near your other window functions
+window.viewInterviewDetails = async (interviewId) => {
+    debugLog('🔍 Opening interview details', { interviewId });
+    const modal = document.getElementById('interviewDetailsModal');
+    const modalContent = document.getElementById('interviewModalContent');
+    const modalTitle = document.getElementById('modalTitle');
+
+    try {
+        const interviewDoc = await getDoc(doc(db, "interviews", interviewId));
+        if (!interviewDoc.exists()) {
+            debugLog('❌ Interview not found');
+            return;
+        }
+
+        const interview = interviewDoc.data();
+        debugLog('📄 Interview data loaded', interview);
+
+        modalTitle.textContent = `Interview with ${interview.companyName || 'Company'}`;
+
+        // Format proposed times safely
+        const timesList = interview.proposedTimes?.map(timestamp => {
+            // Handle both Firestore Timestamps and regular dates
+            const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+            return isNaN(date.getTime()) ? null : `
+                <div class="p-3 bg-academic-warm/5 rounded-lg">
+                    <time datetime="${date.toISOString()}" class="font-medium">
+                        ${date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}
+                    </time>
+                </div>
+            `;
+        }).filter(Boolean).join('') || 'No times proposed';
+
+        modalContent.innerHTML = `
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Position</h4>
+                    <p class="text-gray-600">${interview.position || 'Not specified'}</p>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Location</h4>
+                    <p class="text-gray-600">${interview.location || 'To be determined'}</p>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Duration</h4>
+                    <p class="text-gray-600">${interview.duration ? `${interview.duration} minutes` : 'Not specified'}</p>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Proposed Interview Times</h4>
+                    <div class="mt-2 space-y-2">
+                        ${timesList}
+                    </div>
+                </div>
+
+                ${interview.notes ? `
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-900">Additional Notes</h4>
+                        <p class="text-gray-600">${interview.notes}</p>
+                    </div>
+                ` : ''}
+
+                ${interview.status === 'pending' ? `
+                    <div class="pt-4 border-t border-gray-200">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">Response Required</h4>
+                        <p class="text-gray-600 mb-4">Please accept one of the proposed times or decline the interview request.</p>
+                        <div class="flex gap-3">
+                            <button onclick="handleInterview('${interviewId}', 'accept')" 
+                                class="flex-1 px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
+                                Accept Interview
+                            </button>
+                            <button onclick="handleInterview('${interviewId}', 'decline')"
+                                class="flex-1 px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                                Decline
+                            </button>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+
+    } catch (error) {
+        debugLog('❌ Error loading interview details:', error);
+        alert('Error loading interview details. Please try again.');
+    }
+};
+
+window.closeInterviewModal = () => {
+    debugLog('🔍 Closing interview details modal');
+    document.getElementById('interviewDetailsModal').classList.add('hidden');
 };

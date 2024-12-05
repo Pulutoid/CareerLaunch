@@ -553,14 +553,20 @@ document.getElementById('interviewRequestForm').addEventListener('submit', async
             throw new Error('Please provide at least one proposed date');
         }
 
+        debugLog('🕒 Collected dates', {
+            allInputs: document.querySelectorAll('.proposed-date').length,
+            proposedDates: proposedDates,
+            values: Array.from(document.querySelectorAll('.proposed-date')).map(input => input.value)
+        });
+
         const interviewData = {
             applicationId: currentInterviewData.applicationId,
             employerId: employerId,
             companyName: companyName,
             studentId: currentInterviewData.studentId,
             studentName: currentInterviewData.studentName,
-            type: document.getElementById('interviewType').value,
-            proposedDates: proposedDates,
+            position: document.getElementById('interviewType').value,
+            proposedTimes: proposedDates.map(date => new Date(date)), // Convert to Date objects
             duration: parseInt(document.getElementById('interviewDuration').value),
             location: document.getElementById('interviewLocation').value,
             notes: document.getElementById('interviewNotes').value,
