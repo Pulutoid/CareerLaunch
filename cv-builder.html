@@ -34,14 +34,18 @@
             }
         }
     </script>
+    <style>
+        .slant-bottom {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+        }
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 </head>
 
-<body class="min-h-screen bg-academic-light" data-requires-auth="true">
-    <!-- Message display -->
+<body class="min-h-screen bg-academic-light flex flex-col" data-requires-auth="true"> <!-- Message display -->
     <div id="message"
         class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 opacity-0 transition-opacity duration-300"></div>
 
@@ -55,66 +59,79 @@
         <pre id="debugLog" class="text-xs whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-academic-primary text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-serif font-bold">
-                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-8">
-                    <button id="toggleDebug" class="text-sm text-academic-tertiary/80 hover:text-academic-tertiary">
-                        <i class="fas fa-bug mr-2"></i>Debug Info
-                    </button>
-                    <a href="stident-dashboard.html"
-                        class="text-academic-light hover:text-academic-tertiary transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
-                    </a>
-                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
-                </div>
-            </div>
+    <div class="relative bg-academic-primary slant-bottom">
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="https://math.kfupm.edu.sa/images/default-source/default-album/b5-tower-hd36690806-d10e-4d28-87e2-f143d643a21e.tmb-banner.jpg?Culture=en&sfvrsn=2d78144e_2"
+                alt="KFUPM Campus" class="w-full h-full object-cover opacity-20">
         </div>
-    </nav>
 
-    <main class="max-w-7xl mx-auto px-6 py-12">
-        <!-- Step Progress -->
-        <div class="mb-8">
-            <div class="flex justify-between">
-                <div class="w-full flex items-center">
-                    <div class="relative flex-1">
-                        <div class="h-1 bg-academic-tertiary"></div>
-                        <div class="absolute -top-2 left-0">
-                            <div class="bg-academic-tertiary rounded-full h-5 w-5 flex items-center justify-center">
-                                <span class="text-white text-xs">1</span>
-                            </div>
-                            <span
-                                class="absolute top-6 -left-4 text-sm text-academic-primary font-medium">Template</span>
-                        </div>
+        <!-- Navigation -->
+        <nav class="relative z-10">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between h-20">
+                    <div class="flex items-center">
+                        <a href="home.html" class="text-2xl font-serif font-bold">
+                            <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                        </a>
                     </div>
-                    <div class="relative flex-1">
-                        <div class="h-1 bg-gray-200" id="step2Bar"></div>
-                        <div class="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <div class="bg-gray-200 rounded-full h-5 w-5 flex items-center justify-center"
-                                id="step2Circle">
-                                <span class="text-gray-600 text-xs">2</span>
-                            </div>
-                            <span class="absolute top-6 -left-8 text-sm text-gray-500 font-medium">Information</span>
-                        </div>
+                    <div class="flex items-center space-x-8">
+                        <button id="toggleDebug" class="text-sm text-academic-tertiary/80 hover:text-academic-tertiary">
+                            <i class="fas fa-bug mr-2"></i>Debug Info
+                        </button>
+                        <a href="student-dashboard.html"
+                            class="text-academic-light hover:text-academic-tertiary transition-colors">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                        </a>
+                        <span id="userDisplayName" class="text-academic-light font-medium"></span>
                     </div>
-                    <div class="relative flex-1">
-                        <div class="h-1 bg-gray-200" id="step3Bar"></div>
-                        <div class="absolute -top-2 right-0">
-                            <div class="bg-gray-200 rounded-full h-5 w-5 flex items-center justify-center"
-                                id="step3Circle">
-                                <span class="text-gray-600 text-xs">3</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Header Content -->
+        <div class="relative z-10 max-w-7xl mx-auto px-6 py-16">
+            <h1 class="text-4xl font-serif font-bold text-white mb-8">Build Your Professional CV</h1>
+            <!-- Progress Steps in frosted glass panel -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="flex justify-between">
+                    <div class="w-full flex items-center">
+                        <div class="relative flex-1">
+                            <div class="h-1 bg-academic-tertiary"></div>
+                            <div class="absolute -top-2 left-0">
+                                <div class="bg-academic-tertiary rounded-full h-5 w-5 flex items-center justify-center">
+                                    <span class="text-white text-xs">1</span>
+                                </div>
+                                <span class="absolute top-6 -left-4 text-sm text-white font-medium">Template</span>
                             </div>
-                            <span class="absolute top-6 -right-4 text-sm text-gray-500 font-medium">Preview</span>
+                        </div>
+                        <div class="relative flex-1">
+                            <div class="h-1 bg-white/30" id="step2Bar"></div>
+                            <div class="absolute -top-2 left-1/2 -translate-x-1/2">
+                                <div class="bg-white/30 rounded-full h-5 w-5 flex items-center justify-center"
+                                    id="step2Circle">
+                                    <span class="text-white text-xs">2</span>
+                                </div>
+                                <span
+                                    class="absolute top-6 -left-8 text-sm text-white/80 font-medium">Information</span>
+                            </div>
+                        </div>
+                        <div class="relative flex-1">
+                            <div class="h-1 bg-white/30" id="step3Bar"></div>
+                            <div class="absolute -top-2 right-0">
+                                <div class="bg-white/30 rounded-full h-5 w-5 flex items-center justify-center"
+                                    id="step3Circle">
+                                    <span class="text-white text-xs">3</span>
+                                </div>
+                                <span class="absolute top-6 -right-4 text-sm text-white/80 font-medium">Preview</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-6 py-12 flex-grow">
 
         <!-- Template Selection -->
         <div id="templateStep" class="mb-8">
@@ -196,6 +213,14 @@
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/cv-builder.js"></script>
     <!-- Add these in the head section -->
+    <footer class="bg-academic-primary text-white mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-6">
+            <div class="text-center text-academic-tertiary/90">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
 
 </body>
 

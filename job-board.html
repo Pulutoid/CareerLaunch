@@ -1,5 +1,4 @@
 <!-- job-board.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -29,19 +28,21 @@
             }
         }
     </script>
+    <style>
+        .slant-bottom {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+        }
+    </style>
     <link
         href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-
-
     <script src="js/config/tailwind.config.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/job-board.js"></script>
 </head>
 
-<body class="min-h-screen bg-academic-light" data-requires-auth="true">
+<body class="min-h-screen bg-academic-light flex flex-col" data-requires-auth="true">
     <!-- Debug Panel -->
     <div id="debugPanel"
         class="hidden mb-4 p-4 bg-yellow-100 rounded text-xs fixed top-0 right-0 m-4 max-w-lg max-h-screen overflow-auto z-50">
@@ -52,64 +53,74 @@
         <pre id="debugLog" class="whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-academic-primary text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-serif font-bold">
-                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
-                    </a>
+    <!-- Header Section with Background -->
+    <div class="relative bg-academic-primary slant-bottom">
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="https://math.kfupm.edu.sa/images/default-source/default-album/b5-tower-hd36690806-d10e-4d28-87e2-f143d643a21e.tmb-banner.jpg?Culture=en&sfvrsn=2d78144e_2"
+                alt="KFUPM Campus" class="w-full h-full object-cover opacity-20">
+        </div>
+
+        <!-- Navigation -->
+        <nav class="relative z-10">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between h-20">
+                    <div class="flex items-center">
+                        <a href="home.html" class="text-2xl font-serif font-bold">
+                            <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-8">
+                        <a href="cv-builder.html"
+                            class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">CV
+                            Builder</a>
+                        <a href="job-board.html"
+                            class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Job
+                            Search</a>
+                        <span
+                            class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Student
+                            Account</span>
+                        <span id="userDisplayName" class="text-academic-light font-medium"></span>
+                        <button onclick="logout()"
+                            class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
+                            Logout
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-8">
-                    <a href="cv-builder.html"
-                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">CV
-                        Builder</a>
-                    <a href="job-board.html"
-                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Job
-                        Search</a>
-                    <span
-                        class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Student
-                        Account</span>
-                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
-                    <button onclick="logout()"
-                        class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
-                        Logout
+            </div>
+        </nav>
+
+        <!-- Search Section -->
+        <div class="relative z-10 max-w-7xl mx-auto px-6 py-16">
+            <h1 class="text-4xl font-serif font-bold text-white mb-8">Find Your Perfect Role</h1>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div class="flex-1 min-w-[200px]">
+                        <input type="text" id="searchInput" placeholder="Search jobs..."
+                            class="w-full px-4 py-3 border rounded-lg focus:ring-academic-tertiary focus:border-academic-tertiary bg-white/90">
+                    </div>
+                    <select id="departmentFilter"
+                        class="px-4 py-3 border rounded-lg focus:ring-academic-tertiary focus:border-academic-tertiary bg-white/90">
+                        <option value="">All Departments</option>
+                    </select>
+                    <select id="typeFilter"
+                        class="px-4 py-3 border rounded-lg focus:ring-academic-tertiary focus:border-academic-tertiary bg-white/90">
+                        <option value="">All Types</option>
+                        <option value="full-time">Full Time</option>
+                        <option value="part-time">Part Time</option>
+                        <option value="internship">Internship</option>
+                    </select>
+                    <button id="clearFilters"
+                        class="px-4 py-3 text-white hover:text-academic-tertiary transition-colors">
+                        <i class="fas fa-undo mr-2"></i>Clear Filters
                     </button>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Add this right after the nav -->
     <div id="message" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"></div>
 
-
-    <main class="max-w-7xl mx-auto px-6 py-12">
-        <!-- Filters Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
-            <div class="flex flex-wrap gap-4 items-center">
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" id="searchInput" placeholder="Search jobs..."
-                        class="w-full px-4 py-2 border rounded-md focus:ring-academic-tertiary focus:border-academic-tertiary">
-                </div>
-                <select id="departmentFilter"
-                    class="px-4 py-2 border rounded-md focus:ring-academic-tertiary focus:border-academic-tertiary">
-                    <option value="">All Departments</option>
-                </select>
-                <select id="typeFilter"
-                    class="px-4 py-2 border rounded-md focus:ring-academic-tertiary focus:border-academic-tertiary">
-                    <option value="">All Types</option>
-                    <option value="full-time">Full Time</option>
-                    <option value="part-time">Part Time</option>
-                    <option value="internship">Internship</option>
-                </select>
-                <button id="clearFilters"
-                    class="px-4 py-2 text-gray-600 hover:text-academic-tertiary transition-colors">
-                    <i class="fas fa-undo mr-2"></i>Clear Filters
-                </button>
-            </div>
-        </div>
-
+    <main class="max-w-7xl mx-auto px-6 py-12 flex-grow">
         <!-- Jobs Grid -->
         <div id="jobsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Jobs will be dynamically inserted here -->
@@ -123,7 +134,6 @@
             </div>
         </div>
     </main>
-
     <!-- Job Details Modal -->
     <div id="jobDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
         <div class="flex items-center justify-center min-h-screen px-4 py-8">

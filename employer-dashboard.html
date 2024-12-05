@@ -33,6 +33,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        .slant {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+        }
+
+        .slant-top {
+            clip-path: polygon(0 15%, 100% 0, 100% 100%, 0% 100%);
+        }
+
         .message-visible {
             opacity: 1 !important;
             background-color: white;
@@ -70,399 +78,388 @@
         <pre id="debugLog" class="text-xs whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-academic-primary text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-serif font-bold">
-                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-8">
-                    <span
-                        class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Employer
-                        Account</span>
-                    <span id="userDisplayName" class="text-academic-light font-medium"></span>
-                    <button onclick="logout()"
-                        class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
-                        Logout
-                    </button>
+    <body class="min-h-screen bg-academic-light flex flex-col" data-requires-auth="true">
+        <!-- Debug Panel stays the same -->
+
+        <nav class="bg-academic-primary text-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between h-20">
+                    <div class="flex items-center">
+                        <a href="home.html" class="text-2xl font-serif font-bold">
+                            <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-8">
+                        <span
+                            class="px-4 py-1.5 bg-academic-tertiary/20 text-academic-tertiary rounded-full text-sm font-medium">Employer
+                            Account</span>
+                        <span id="userDisplayName" class="text-academic-light font-medium"></span>
+                        <button onclick="window.handleLogout()"
+                            class="px-4 py-2 border border-academic-tertiary/30 rounded-md hover:bg-academic-dark/20 transition-colors text-academic-tertiary">
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-    <div id="message"
-        class="fixed top-4 left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity duration-300 z-50"></div>
+        </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Company Profile Summary -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6 mb-8">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Welcome, <span id="companyName">Company</span></h1>
-                    <p class="text-gray-600" id="companyPosition">Position</p>
+        <header class="relative mb-12 h-96">
+            <div class="absolute inset-0 bg-black slant overflow-hidden">
+                <img src="https://math.kfupm.edu.sa/images/default-source/default-album/b5-tower-hd36690806-d10e-4d28-87e2-f143d643a21e.tmb-banner.jpg?Culture=en&sfvrsn=2d78144e_2"
+                    alt="KFUPM Campus" class="object-cover w-full h-full opacity-60">
+            </div>
+            <div class="relative z-10 max-w-7xl mx-auto px-6 pt-20">
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 max-w-2xl border border-white/20">
+                    <h1 class="text-4xl font-serif font-bold text-white mb-2">Welcome, <span id="companyName"
+                            class="text-academic-tertiary">Company</span></h1>
+                    <p class="text-white/90 font-medium" id="companyPosition">Position</p>
+                    <div id="profileCompletion" class="mt-6">
+                        <div class="w-full bg-black/30 rounded-full h-2.5">
+                            <div class="bg-academic-tertiary h-2.5 rounded-full transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-white/80 mt-2">Profile completion: 0%</p>
+                    </div>
+                    <div class="mt-6 flex gap-4">
+                        <button onclick="editCompanyProfile()"
+                            class="inline-flex items-center justify-center bg-academic-tertiary text-white px-6 py-2.5 rounded-lg hover:bg-academic-primary transition-colors">
+                            <i class="fas fa-user-edit mr-2"></i>
+                            Edit Profile
+                        </button>
+                    </div>
                 </div>
-                <button onclick="editCompanyProfile()"
-                    class="px-4 py-2 text-sm text-academic-tertiary border border-kfupm-500 rounded-md hover:bg-kfupm-50">
-                    Edit Profile
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-12 flex-grow">
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 max-w-4xl mx-auto">
+                <button id="postJobBtn"
+                    class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
+                    <i class="fas fa-plus-circle text-academic-tertiary text-2xl mb-3"></i>
+                    <h3
+                        class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
+                        Post New Job</h3>
+                    <p class="text-sm text-gray-600 mt-2">Create a new job listing</p>
+                </button>
+
+                <button onclick="searchCandidates()"
+                    class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
+                    <i class="fas fa-search text-academic-tertiary text-2xl mb-3"></i>
+                    <h3
+                        class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
+                        Search Candidates</h3>
+                    <p class="text-sm text-gray-600 mt-2">Find qualified students</p>
                 </button>
             </div>
-            <div id="profileCompletion" class="mt-4">
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-academic-primary h-2 rounded-full transition-all duration-500" style="width: 0%">
+
+
+
+
+            <!-- Active Job Listings -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-medium text-gray-900">Active Job Listings</h2>
+                    <div class="flex space-x-2">
+                        <button onclick="filterJobs('all')"
+                            class="px-3 py-1 text-sm rounded-md bg-kfupm-100 text-kfupm-700">All</button>
+                        <button onclick="filterJobs('active')"
+                            class="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700">Active</button>
+                        <button onclick="filterJobs('expired')"
+                            class="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700">Expired</button>
                     </div>
                 </div>
-                <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <button id="postJobBtn" class="p-4 bg-white rounded-xl shadow-sm border border-gray-100..."> <i
-                    class="fas fa-plus-circle text-academic-tertiary text-xl mb-2"></i>
-                <h3 class="font-semibold">Post New Job</h3>
-                <p class="text-sm text-gray-600">Create a new job listing</p>
-            </button>
-
-            <button onclick="searchCandidates()"
-                class="p-4 bg-white rounded-xl shadow-sm border border-gray-100 shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-search text-academic-tertiary text-xl mb-2"></i>
-                <h3 class="font-semibold">Search Candidates</h3>
-                <p class="text-sm text-gray-600">Find qualified students</p>
-            </button>
-
-            <button onclick="viewApplications()"
-                class="p-4 bg-white rounded-xl shadow-sm border border-gray-100 shadow-md hover:shadow-lg transition-shadow">
-                <i class="fas fa-file-alt text-academic-tertiary text-xl mb-2"></i>
-                <h3 class="font-semibold">Review Applications</h3>
-                <p class="text-sm text-gray-600">Manage received applications</p>
-            </button>
-        </div>
-
-        <!-- Statistics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Active Jobs</h3>
-                <p id="activeJobs" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Applications</h3>
-                <p id="totalApplications" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Profile Views</h3>
-                <p id="profileViews" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6">
-                <h3 class="text-lg font-medium text-gray-900">Interviews</h3>
-                <p id="scheduledInterviews" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-        </div>
-
-        <!-- Active Job Listings -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-md p-6 mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-medium text-gray-900">Active Job Listings</h2>
-                <div class="flex space-x-2">
-                    <button onclick="filterJobs('all')"
-                        class="px-3 py-1 text-sm rounded-md bg-kfupm-100 text-kfupm-700">All</button>
-                    <button onclick="filterJobs('active')"
-                        class="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700">Active</button>
-                    <button onclick="filterJobs('expired')"
-                        class="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700">Expired</button>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Posted</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applications
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobListingsTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Job listings will be dynamically inserted here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Posted</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applications
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="jobListingsTable" class="bg-white divide-y divide-gray-200">
-                        <!-- Job listings will be dynamically inserted here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Recent Applications -->
+            <!-- Recent Applications -->
 
-        <!-- Application Trends Chart -->
+            <!-- Application Trends Chart -->
 
-    </main>
+        </main>
 
-    <footer class="bg-academic-primary text-white mt-12">
-        <div class="max-w-7xl mx-auto py-8 px-6">
-            <div class="text-center text-academic-tertiary/90">
-                © 2024 CareerLaunch - KFUPM. All rights reserved.
-            </div>
-        </div>
-    </footer>
-
-    <!-- Job Posting Modal -->
-    <div id="postJobModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-xl w-full max-w-2xl">
-                <!-- Modal Header -->
-                <div class="flex items-center justify-between p-6 border-b">
-                    <h3 class="text-xl font-semibold text-gray-900">Post New Job</h3>
-                    <button onclick="closeJobDetailsModal()" class="text-gray-400 hover:text-gray-500">
-                        <i class="fas fa-times"></i>
-                    </button>
+        <footer class="bg-academic-primary text-white mt-12">
+            <div class="max-w-7xl mx-auto py-8 px-6">
+                <div class="text-center text-academic-tertiary/90">
+                    © 2024 CareerLaunch - KFUPM. All rights reserved.
                 </div>
+            </div>
+        </footer>
 
-                <!-- Modal Body -->
-                <form id="jobPostForm" class="p-6">
-                    <div class="space-y-4">
-                        <!-- Basic Info -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Job Title</label>
-                                <input type="text" id="jobTitle" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500 px-3 py-2 bg-white border">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Department</label>
-                                <input type="text" id="department" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
-                            </div>
-                        </div>
-
-                        <!-- Location and Type -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Location</label>
-                                <input type="text" id="location" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Employment Type</label>
-                                <select id="employmentType" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
-                                    <option value="full-time">Full Time</option>
-                                    <option value="part-time">Part Time</option>
-                                    <option value="internship">Internship</option>
-                                    <option value="contract">Contract</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Job Description</label>
-                            <textarea id="description" rows="4" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500"></textarea>
-                        </div>
-
-                        <!-- Requirements -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Requirements</label>
-                            <textarea id="requirements" rows="4" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500"></textarea>
-                        </div>
-
-                        <!-- Skills -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Required Skills
-                                (comma-separated)</label>
-                            <input type="text" id="skills" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500"
-                                placeholder="e.g. JavaScript, Python, SQL">
-                        </div>
-
-                        <!-- Deadline -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Application Deadline</label>
-                            <input type="date" id="deadline" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="mt-6">
-                        <button type="submit"
-                            class="w-full px-4 py-2 bg-academic-primary text-white rounded-md hover:bg-academic-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kfupm-500">
-                            Post Job
+        <!-- Job Posting Modal -->
+        <div id="postJobModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 shadow-xl w-full max-w-2xl">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between p-6 border-b">
+                        <h3 class="text-xl font-semibold text-gray-900">Post New Job</h3>
+                        <button onclick="closeJobDetailsModal()" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- Job Details Modal -->
-    <div id="jobDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
-        <div class="flex items-center justify-center min-h-screen px-4 py-8">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-                <!-- Modal Header -->
-                <div class="flex items-center justify-between p-6 border-b">
-                    <h3 id="modalJobTitle" class="text-xl font-semibold text-gray-900">Job Details</h3>
-                    <button onclick="closeJobDetailsModal()" class="text-gray-400 hover:text-gray-500">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
 
-                <!-- Modal Body -->
-                <div class="flex divide-x h-full overflow-hidden">
-                    <!-- Job Details Panel -->
-                    <div class="w-1/2 p-6 overflow-y-auto" id="modalContent">
-                        Loading job details...
-                    </div>
+                    <!-- Modal Body -->
+                    <form id="jobPostForm" class="p-6">
+                        <div class="space-y-4">
+                            <!-- Basic Info -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Job Title</label>
+                                    <input type="text" id="jobTitle" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500 px-3 py-2 bg-white border">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Department</label>
+                                    <input type="text" id="department" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
+                                </div>
+                            </div>
 
-                    <!-- Applications Panel -->
-                    <div class="w-1/2 p-6 overflow-y-auto">
-                        <div class="mb-4">
-                            <h4 class="text-lg font-medium text-gray-900">Applications & Interviews</h4>
-                            <div class="flex gap-4 mt-2">
-                                <span class="text-sm">
-                                    <span
-                                        class="inline-flex items-center justify-center bg-yellow-100 text-yellow-800 rounded-full w-6 h-6 text-xs mr-1 pending-count">0</span>
-                                    Pending
-                                </span>
-                                <span class="text-sm">
-                                    <span
-                                        class="inline-flex items-center justify-center bg-purple-100 text-purple-800 rounded-full w-6 h-6 text-xs mr-1 interview-count">0</span>
-                                    Interviews
-                                </span>
-                                <span class="text-sm">
-                                    <span
-                                        class="inline-flex items-center justify-center bg-green-100 text-green-800 rounded-full w-6 h-6 text-xs mr-1 confirmed-count">0</span>
-                                    Confirmed
-                                </span>
+                            <!-- Location and Type -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Location</label>
+                                    <input type="text" id="location" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Employment Type</label>
+                                    <select id="employmentType" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
+                                        <option value="full-time">Full Time</option>
+                                        <option value="part-time">Part Time</option>
+                                        <option value="internship">Internship</option>
+                                        <option value="contract">Contract</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Job Description</label>
+                                <textarea id="description" rows="4" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500"></textarea>
+                            </div>
+
+                            <!-- Requirements -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Requirements</label>
+                                <textarea id="requirements" rows="4" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500"></textarea>
+                            </div>
+
+                            <!-- Skills -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Required Skills
+                                    (comma-separated)</label>
+                                <input type="text" id="skills" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500"
+                                    placeholder="e.g. JavaScript, Python, SQL">
+                            </div>
+
+                            <!-- Deadline -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Application Deadline</label>
+                                <input type="date" id="deadline" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-kfupm-500 focus:ring-kfupm-500">
                             </div>
                         </div>
-                        <!-- Applications Container -->
-                        <div class="space-y-6">
-                            <!-- Pending Applications -->
-                            <div>
-                                <h5 class="text-sm font-medium text-gray-700 mb-3">Pending Applications</h5>
-                                <div id="pendingApplications" class="space-y-4"></div>
-                            </div>
 
-                            <!-- Interview Process -->
-                            <div>
-                                <h5 class="text-sm font-medium text-gray-700 mb-3">Interview Process</h5>
-                                <div id="interviewApplications" class="space-y-4"></div>
-                            </div>
-
-                            <!-- Confirmed Interviews -->
-                            <div>
-                                <h5 class="text-sm font-medium text-gray-700 mb-3">Confirmed Interviews</h5>
-                                <div id="confirmedApplications" class="space-y-4"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Interview Request Modal -->
-    <div id="interviewRequestModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
-                <div class="flex items-center justify-between p-6 border-b">
-                    <h3 class="text-xl font-semibold text-gray-900">Schedule Interview</h3>
-                    <button onclick="closeInterviewModal()" class="text-gray-400 hover:text-gray-500">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <form id="interviewRequestForm" class="p-6 space-y-6">
-                    <!-- Interview Type -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Interview Type</label>
-                        <select id="interviewType" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
-                            <option value="in-person">In-Person</option>
-                            <option value="virtual">Virtual Meeting</option>
-                            <option value="phone">Phone Call</option>
-                        </select>
-                    </div>
-
-                    <!-- Proposed Dates -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Proposed Dates (select up to 3)</label>
-                        <div class="mt-2 space-y-3">
-                            <input type="datetime-local" required
-                                class="proposed-date block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
-                            <input type="datetime-local"
-                                class="proposed-date block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
-                            <input type="datetime-local"
-                                class="proposed-date block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
-                        </div>
-                        <p class="mt-1 text-sm text-gray-500">Please provide multiple options for the candidate</p>
-                    </div>
-
-                    <!-- Duration -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Expected Duration</label>
-                        <select id="interviewDuration" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
-                            <option value="30">30 minutes</option>
-                            <option value="45">45 minutes</option>
-                            <option value="60">1 hour</option>
-                            <option value="90">1.5 hours</option>
-                        </select>
-                    </div>
-
-                    <!-- Location/Link -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Location / Meeting Link</label>
-                        <input type="text" id="interviewLocation" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
-                        <p class="mt-1 text-sm text-gray-500">For in-person: provide address. For virtual: provide
-                            meeting link</p>
-                    </div>
-
-                    <!-- Additional Notes -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Additional Notes</label>
-                        <textarea id="interviewNotes" rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"
-                            placeholder="Any special instructions or things the candidate should know..."></textarea>
-                    </div>
-
-                    <div class="pt-4 flex flex-col gap-3">
-                        <!-- Regular submit button -->
-                        <button type="submit" id="submitInterviewBtn"
-                            class="w-full px-4 py-2 bg-academic-primary text-white rounded-md hover:bg-academic-dark transition-colors">
-                            <span class="inline-flex items-center">
-                                <i class="fas fa-calendar-plus mr-2"></i>
-                                Send Interview Request
-                            </span>
-                        </button>
-
-                        <!-- Success message (hidden by default) -->
-                        <div id="interviewSuccessMessage" class="hidden flex flex-col items-center gap-3">
-                            <div class="bg-green-50 text-green-800 p-4 rounded-lg text-center w-full">
-                                <i class="fas fa-check-circle text-2xl mb-2"></i>
-                                <p class="font-medium">Interview Request Sent!</p>
-                                <p class="text-sm text-green-600">The candidate will be notified and can respond to your
-                                    request.</p>
-                            </div>
-                            <button type="button" onclick="closeInterviewModal()"
-                                class="w-full px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors">
-                                Close
+                        <!-- Submit Button -->
+                        <div class="mt-6">
+                            <button type="submit"
+                                class="w-full px-4 py-2 bg-academic-primary text-white rounded-md hover:bg-academic-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kfupm-500">
+                                Post Job
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+        <!-- Job Details Modal -->
+        <div id="jobDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
+            <div class="flex items-center justify-center min-h-screen px-4 py-8">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between p-6 border-b">
+                        <h3 id="modalJobTitle" class="text-xl font-semibold text-gray-900">Job Details</h3>
+                        <button onclick="closeJobDetailsModal()" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
 
-    <script src="js/config/tailwind.config.js"></script>
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/employer-dashboard.js"></script>
-</body>
+                    <!-- Modal Body -->
+                    <div class="flex divide-x h-full overflow-hidden">
+                        <!-- Job Details Panel -->
+                        <div class="w-1/2 p-6 overflow-y-auto" id="modalContent">
+                            Loading job details...
+                        </div>
+
+                        <!-- Applications Panel -->
+                        <div class="w-1/2 p-6 overflow-y-auto">
+                            <div class="mb-4">
+                                <h4 class="text-lg font-medium text-gray-900">Applications & Interviews</h4>
+                                <div class="flex gap-4 mt-2">
+                                    <span class="text-sm">
+                                        <span
+                                            class="inline-flex items-center justify-center bg-yellow-100 text-yellow-800 rounded-full w-6 h-6 text-xs mr-1 pending-count">0</span>
+                                        Pending
+                                    </span>
+                                    <span class="text-sm">
+                                        <span
+                                            class="inline-flex items-center justify-center bg-purple-100 text-purple-800 rounded-full w-6 h-6 text-xs mr-1 interview-count">0</span>
+                                        Interviews
+                                    </span>
+                                    <span class="text-sm">
+                                        <span
+                                            class="inline-flex items-center justify-center bg-green-100 text-green-800 rounded-full w-6 h-6 text-xs mr-1 confirmed-count">0</span>
+                                        Confirmed
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Applications Container -->
+                            <div class="space-y-6">
+                                <!-- Pending Applications -->
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700 mb-3">Pending Applications</h5>
+                                    <div id="pendingApplications" class="space-y-4"></div>
+                                </div>
+
+                                <!-- Interview Process -->
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700 mb-3">Interview Process</h5>
+                                    <div id="interviewApplications" class="space-y-4"></div>
+                                </div>
+
+                                <!-- Confirmed Interviews -->
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700 mb-3">Confirmed Interviews</h5>
+                                    <div id="confirmedApplications" class="space-y-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interview Request Modal -->
+        <div id="interviewRequestModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden" style="z-index: 1000;">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+                    <div class="flex items-center justify-between p-6 border-b">
+                        <h3 class="text-xl font-semibold text-gray-900">Schedule Interview</h3>
+                        <button onclick="closeInterviewModal()" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <form id="interviewRequestForm" class="p-6 space-y-6">
+                        <!-- Interview Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Interview Type</label>
+                            <select id="interviewType" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                                <option value="in-person">In-Person</option>
+                                <option value="virtual">Virtual Meeting</option>
+                                <option value="phone">Phone Call</option>
+                            </select>
+                        </div>
+
+                        <!-- Proposed Dates -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Proposed Dates (select up to
+                                3)</label>
+                            <div class="mt-2 space-y-3">
+                                <input type="datetime-local" required
+                                    class="proposed-date block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                                <input type="datetime-local"
+                                    class="proposed-date block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                                <input type="datetime-local"
+                                    class="proposed-date block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500">Please provide multiple options for the candidate</p>
+                        </div>
+
+                        <!-- Duration -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Expected Duration</label>
+                            <select id="interviewDuration" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="90">1.5 hours</option>
+                            </select>
+                        </div>
+
+                        <!-- Location/Link -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Location / Meeting Link</label>
+                            <input type="text" id="interviewLocation" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary">
+                            <p class="mt-1 text-sm text-gray-500">For in-person: provide address. For virtual: provide
+                                meeting link</p>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Additional Notes</label>
+                            <textarea id="interviewNotes" rows="3"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-academic-tertiary focus:ring-academic-tertiary"
+                                placeholder="Any special instructions or things the candidate should know..."></textarea>
+                        </div>
+
+                        <div class="pt-4 flex flex-col gap-3">
+                            <!-- Regular submit button -->
+                            <button type="submit" id="submitInterviewBtn"
+                                class="w-full px-4 py-2 bg-academic-primary text-white rounded-md hover:bg-academic-dark transition-colors">
+                                <span class="inline-flex items-center">
+                                    <i class="fas fa-calendar-plus mr-2"></i>
+                                    Send Interview Request
+                                </span>
+                            </button>
+
+                            <!-- Success message (hidden by default) -->
+                            <div id="interviewSuccessMessage" class="hidden flex flex-col items-center gap-3">
+                                <div class="bg-green-50 text-green-800 p-4 rounded-lg text-center w-full">
+                                    <i class="fas fa-check-circle text-2xl mb-2"></i>
+                                    <p class="font-medium">Interview Request Sent!</p>
+                                    <p class="text-sm text-green-600">The candidate will be notified and can respond to
+                                        your
+                                        request.</p>
+                                </div>
+                                <button type="button" onclick="closeInterviewModal()"
+                                    class="w-full px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/config/tailwind.config.js"></script>
+        <script type="module" src="js/auth.js"></script>
+        <script type="module" src="js/employer-dashboard.js"></script>
+    </body>
 
 </html>

@@ -28,6 +28,15 @@
             }
         }
     </script>
+    <style>
+        .slant {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+        }
+
+        .slant-top {
+            clip-path: polygon(0 15%, 100% 0, 100% 100%, 0% 100%);
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,7 +53,8 @@
         <pre id="debugLog" class="whitespace-pre-wrap"></pre>
     </div>
 
-    <nav class="bg-academic-primary text-white shadow-lg">
+
+    <nav class="bg-academic-primary text-white">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex justify-between h-20">
                 <div class="flex items-center">
@@ -72,45 +82,48 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-6 py-12">
-        <!-- Welcome Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-10">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h1 class="text-3xl font-serif font-bold text-academic-primary mb-2">Welcome, <span id="userName"
-                            class="text-academic-tertiary">Student</span></h1>
-                    <p class="text-gray-600 font-medium" id="studentId">Student ID: Loading...</p>
-                    <div class="mt-4 space-y-2">
-                        <p class="text-gray-600" id="userMajor">Major: Loading...</p>
-                        <p class="text-gray-600" id="userGPA">GPA: Loading...</p>
-                        <p class="text-gray-600" id="userSkills">Skills: Loading...</p>
-                        <p class="text-gray-600" id="userGradDate">Expected Graduation: Loading...</p>
+    <header class="relative mb-12 h-96">
+        <div class="absolute inset-0 bg-black slant overflow-hidden">
+            <img src="https://math.kfupm.edu.sa/images/default-source/default-album/b5-tower-hd36690806-d10e-4d28-87e2-f143d643a21e.tmb-banner.jpg?Culture=en&sfvrsn=2d78144e_2"
+                alt="KFUPM Campus" class="object-cover w-full h-full opacity-60">
+        </div>
+        <div class="relative z-10 max-w-7xl mx-auto px-6 pt-20">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 max-w-2xl border border-white/20">
+                <h1 class="text-4xl font-serif font-bold text-white mb-2">Welcome, <span id="userName"
+                        class="text-academic-tertiary">Student</span></h1>
+                <p class="text-white/90 font-medium" id="studentId">Student ID: Loading...</p>
+                <div class="mt-4 space-y-2 text-white/80">
+                    <p id="userMajor">Major: Loading...</p>
+                    <p id="userGPA">GPA: Loading...</p>
+                    <div id="profileCompletion" class="mt-6">
+                        <div class="w-full bg-black/30 rounded-full h-2.5">
+                            <div class="bg-academic-tertiary h-2.5 rounded-full transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm mt-2">Profile completion: 0%</p>
                     </div>
                 </div>
-                <div class="flex flex-col gap-3">
+                <div class="mt-6 flex gap-4">
                     <a href="edit-student-profile.html"
-                        class="inline-flex items-center justify-center bg-academic-primary text-white px-6 py-2.5 rounded-lg hover:bg-academic-dark transition-colors">
+                        class="inline-flex items-center justify-center bg-academic-tertiary text-white px-6 py-2.5 rounded-lg hover:bg-academic-primary transition-colors">
                         <i class="fas fa-user-edit mr-2"></i>
                         Edit Profile
                     </a>
                     <button id="toggleDebug"
-                        class="inline-flex items-center justify-center text-gray-500 hover:text-academic-tertiary text-sm">
+                        class="inline-flex items-center justify-center text-white/70 hover:text-white text-sm">
                         <i class="fas fa-bug mr-2"></i>
                         Debug Info
                     </button>
                 </div>
             </div>
-            <div id="profileCompletion" class="mt-6">
-                <div class="w-full bg-gray-100 rounded-full h-2.5">
-                    <div class="bg-academic-tertiary h-2.5 rounded-full transition-all duration-500" style="width: 0%">
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 mt-2">Profile completion: 0%</p>
-            </div>
         </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12 space-y-10">
+
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 max-w-4xl mx-auto">
             <button onclick="location.href='cv-builder.html';"
                 class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
                 <i class="fas fa-file-alt text-academic-tertiary text-2xl mb-3"></i>
@@ -129,38 +142,10 @@
                 <p class="text-sm text-gray-600 mt-2">Browse available positions</p>
             </button>
 
-            <button onclick="viewApplications()"
-                class="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-academic-tertiary hover:bg-academic-warm/10 transition-all">
-                <i class="fas fa-paper-plane text-academic-tertiary text-2xl mb-3"></i>
-                <h3
-                    class="font-serif text-lg font-semibold text-academic-primary group-hover:text-academic-tertiary transition-colors">
-                    My Applications</h3>
-                <p class="text-sm text-gray-600 mt-2">Track your applications</p>
-            </button>
         </div>
 
         <!-- Statistics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-serif font-semibold text-academic-primary">Profile Views</h3>
-                <p id="profileViews" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-serif font-semibold text-academic-primary">Applications Sent</h3>
-                <p id="applicationsSent" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-serif font-semibold text-academic-primary">Interviews Scheduled</h3>
-                <p id="interviewsScheduled" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-serif font-semibold text-academic-primary">CV Downloads</h3>
-                <p id="cvDownloads" class="text-3xl font-bold text-academic-tertiary mt-2">0</p>
-            </div>
-        </div>
 
         <!-- My CVs Section -->
         <section class="bg-gray-100 text-black-500 rounded-xl shadow-sm border border-gray-200 p-8 mb-10">
@@ -246,12 +231,7 @@
         </section>
 
         <!-- Activity Chart -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-            <h2 class="text-xl font-serif font-bold text-academic-primary mb-6">Activity Overview</h2>
-            <div class="h-64">
-                <canvas id="activityChart"></canvas>
-            </div>
-        </div>
+
     </main>
 
     <footer class="bg-academic-primary text-white mt-12">

@@ -31,74 +31,100 @@
             }
         }
     </script>
+    <style>
+        .slant-bottom {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+        }
+    </style>
+
 </head>
 
-<body class="min-h-screen bg-academic-light">
-    <nav class="bg-academic-primary text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <a href="home.html" class="text-2xl font-serif font-bold">
-                        <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-8">
-                    <a href="home.html"
-                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Home</a>
-                    <a href="signup.html"
-                        class="text-academic-light hover:text-academic-tertiary transition-colors font-medium">Sign
-                        Up</a>
+<body class="min-h-screen bg-academic-light flex flex-col">
+
+    <div class="relative bg-academic-primary slant-bottom">
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="https://math.kfupm.edu.sa/images/default-source/default-album/b5-tower-hd36690806-d10e-4d28-87e2-f143d643a21e.tmb-banner.jpg?Culture=en&sfvrsn=2d78144e_2"
+                alt="KFUPM Campus" class="w-full h-full object-cover opacity-10">
+        </div>
+
+        <nav class="relative z-10">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between h-20">
+                    <div class="flex items-center">
+                        <a href="home.html" class="text-2xl font-serif font-bold">
+                            <span class="text-academic-tertiary">Career</span><span class="text-white">Launch</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-8">
+                        <a href="home.html" class="text-white/90 hover:text-white transition-colors">Home</a>
+                        <a href="signup.html"
+                            class="px-4 py-2 bg-academic-tertiary/90 text-white rounded-lg hover:bg-academic-tertiary transition-colors">
+                            Sign Up
+                        </a>
+                    </div>
                 </div>
             </div>
+        </nav>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 py-16">
+            <h1 class="text-4xl font-serif font-bold text-white mb-4">Welcome Back</h1>
+            <p class="text-white/80">Login to access your CareerLaunch account</p>
         </div>
-    </nav>
-    <main class="max-w-md mx-auto mt-20 px-6">
-        <div class="bg-white rounded-xl shadow-md p-8">
-            <h2 class="text-2xl font-serif font-bold text-center text-academic-primary mb-8">Login to Your Account</h2>
+    </div>
 
-            <form id="login-form" class="space-y-6">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-academic-tertiary focus:border-academic-tertiary">
-                </div>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-academic-tertiary focus:border-academic-tertiary">
-                </div>
+    <main class="flex-grow">
+        <div class="max-w-md mx-auto -mt-10 px-6 relative z-20">
+            <div class="bg-white rounded-xl shadow-lg p-8">
 
-                <div class="flex items-center justify-between">
-                    <button type="submit"
-                        class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-academic-tertiary hover:bg-academic-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-academic-tertiary">
-                        Login
+                <h2 class="text-2xl font-serif font-bold text-center text-academic-primary mb-8">Login to Your Account
+                </h2>
+
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="email" required
+                            class="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-academic-tertiary focus:border-academic-tertiary">
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="password" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-academic-tertiary focus:border-academic-tertiary">
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <button type="submit"
+                            class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-academic-primary hover:bg-academic-dark transition-colors">
+                            Login
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <button id="forgotPassword" class="text-sm text-academic-tertiary hover:text-blue-500">
+                        Forgot Password?
                     </button>
                 </div>
-            </form>
 
-            <div class="mt-4">
-                <button id="forgotPassword" class="text-sm text-academic-tertiary hover:text-blue-500">
-                    Forgot Password?
-                </button>
+                <div id="loginMessage" class="mt-4 p-4 rounded-md hidden"></div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Don't have an account?
+                        <a href="signup.html" class="font-medium text-academic-tertiary hover:text-blue-500">
+                            Sign up here
+                        </a>
+                    </p>
+                </div>
             </div>
-
-            <div id="loginMessage" class="mt-4 p-4 rounded-md hidden"></div>
-
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
-                    Don't have an account?
-                    <a href="signup.html" class="font-medium text-academic-tertiary hover:text-blue-500">
-                        Sign up here
-                    </a>
-                </p>
-            </div>
-        </div>
     </main>
 
-    <footer class="bg-academic-primary text-academic-tertiary/90 mt-12">
-        <div class="max-w-7xl mx-auto py-8 px-6 text-center">
-            © 2024 CareerLaunch - KFUPM. All rights reserved.
+    <footer class="bg-academic-primary text-white mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-6">
+            <div class="text-center text-academic-tertiary/90">
+                © 2024 CareerLaunch - KFUPM. All rights reserved.
+            </div>
         </div>
     </footer>
 
