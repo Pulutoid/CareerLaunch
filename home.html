@@ -18,9 +18,10 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="auth.js"></script>
 </head>
 
-<body class="min-h-screen bg-gray-100 font-['Montserrat']">
+<body class="min-h-screen bg-gray-100 font-['Montserrat']" data-requires-auth="false">
     <header class="relative">
         <div class="absolute inset-0 bg-black slant overflow-hidden">
             <img src="https://math.kfupm.edu.sa/images/default-source/default-album/b5-tower-hd36690806-d10e-4d28-87e2-f143d643a21e.tmb-banner.jpg?Culture=en&sfvrsn=2d78144e_2"
@@ -32,13 +33,22 @@
                     CareerLaunch
                 </a>
                 <div class="space-x-8">
-                    <a href="cv-builder.html" class="text-white hover:underline">CV Builder</a>
-                    <a href="job-search.html" class="text-white hover:underline">Job Search</a>
-                    <a href="login.html"
-                        class="bg-white text-sky-600 px-6 py-2 rounded-full shadow-md hover:bg-gray-200 transition duration-300">Login</a>
+                    <div id="guestNav">
+                        <a href="cv-builder.html" class="text-white hover:underline">CV Builder</a>
+                        <a href="job-search.html" class="text-white hover:underline">Job Search</a>
+                        <a href="login.html"
+                            class="bg-white text-sky-600 px-6 py-2 rounded-full shadow-md hover:bg-gray-200 transition duration-300">Login</a>
+                    </div>
+                    <div id="userNav" class="hidden">
+                        <a href="cv-builder.html" class="text-white hover:underline">CV Builder</a>
+                        <a href="job-search.html" class="text-white hover:underline">Job Search</a>
+                        <a href="student-dashboard.html"
+                            class="bg-white text-sky-600 px-6 py-2 rounded-full shadow-md hover:bg-gray-200 transition duration-300">Dashboard</a>
+                    </div>
                 </div>
             </div>
         </nav>
+
         <div class="max-w-7xl mx-auto px-6 py-32 relative z-10">
             <div class="w-full md:w-1/2">
                 <h1 class="text-5xl font-bold text-white mb-6">
@@ -47,10 +57,20 @@
                 <p class="text-xl text-white/90 mb-8">
                     Build your CV, find job opportunities, and kickstart your professional journey at KFUPM.
                 </p>
-                <a href="signup.html"
-                    class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-full text-lg font-semibold inline-block hover:bg-yellow-500 transition duration-300">
-                    Sign Up Now
-                </a>
+
+                <div id="signUpBtn" class="mb-6">
+                    <a href="signup.html"
+                        class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-full text-lg font-semibold inline-block hover:bg-yellow-500 transition duration-300">
+                        Sign Up Now
+                    </a>
+                </div>
+
+                <div id="dashboardBtn" class="hidden">
+                    <a href="student-dashboard.html"
+                        class="bg-emerald-500 text-white px-8 py-4 rounded-full text-lg font-semibold inline-block hover:bg-emerald-600 transition duration-300">
+                        Go to Dashboard
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -103,6 +123,36 @@
             </div>
         </div>
     </footer>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const guestNav = document.getElementById('guestNav');
+            const userNav = document.getElementById('userNav');
+            const signUpBtn = document.getElementById('signUpBtn');
+            const dashboardBtn = document.getElementById('dashboardBtn');
+
+            const loggedInUserId = localStorage.getItem('loggedInUserId');
+            const accountType = localStorage.getItem('accountType');
+
+            if (loggedInUserId) {
+                guestNav.classList.add('hidden');
+                userNav.classList.remove('hidden');
+
+                if (accountType === 'student') {
+                    signUpBtn.classList.add('hidden');
+                    dashboardBtn.classList.remove('hidden');
+                } else {
+                    signUpBtn.classList.remove('hidden');
+                    dashboardBtn.classList.add('hidden');
+                }
+            } else {
+                guestNav.classList.remove('hidden');
+                userNav.classList.add('hidden');
+                signUpBtn.classList.remove('hidden');
+                dashboardBtn.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 
 </html>
