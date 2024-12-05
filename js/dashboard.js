@@ -228,59 +228,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('debugPanel').classList.remove('hidden');
     }
 
-    const togglePending = document.getElementById('togglePending');
-    const toggleConfirmed = document.getElementById('toggleConfirmed');
-    const pendingSection = document.getElementById('pendingInterviews');
-    const confirmedSection = document.getElementById('confirmedInterviews');
-
-    if (togglePending && toggleConfirmed) {
-        togglePending.addEventListener('click', () => toggleInterviewSection('pending'));
-        toggleConfirmed.addEventListener('click', () => toggleInterviewSection('confirmed'));
-    }
-
 
 
 });
 
-function toggleInterviewSection(section) {
-    debugLog('🔄 Toggling interview section', { section });
-
-    const sections = {
-        pending: {
-            button: document.getElementById('togglePending'),
-            content: document.getElementById('pendingInterviews')
-        },
-        confirmed: {
-            button: document.getElementById('toggleConfirmed'),
-            content: document.getElementById('confirmedInterviews')
-        }
-    };
-
-    if (activeInterviewSection === section) {
-        // Hide section if clicking the active one
-        sections[section].content.classList.add('hidden');
-        sections[section].button.classList.remove('text-academic-primary');
-        activeInterviewSection = null;
-    } else {
-        // Hide all sections first
-        Object.values(sections).forEach(s => {
-            s.content.classList.add('hidden');
-            s.button.classList.remove('text-academic-primary');
-        });
-
-        // Show selected section
-        sections[section].content.classList.remove('hidden');
-        sections[section].button.classList.add('text-academic-primary');
-        activeInterviewSection = section;
-
-        // Load content if needed
-        if (section === 'pending') {
-            loadPendingInterviews();
-        } else {
-            loadConfirmedInterviews();
-        }
-    }
-}
 
 async function loadPendingInterviews() {
     debugLog('📥 Starting to load pending interviews');
@@ -476,30 +427,102 @@ window.handleInterview = async (interviewId, action) => {
 
     try {
         const interviewRef = doc(db, "interviews", interviewId);
+        const interviewDoc = await getDoc(interviewRef);
+
+        if (!interviewDoc.exists()) {
+            throw new Error('Interview not found');
+        }
+
+        const interview = interviewDoc.data();
+        debugLog('📄 Retrieved interview data', interview);
+
+        // Get related application and job data
+        const applicationId = interview.applicationId;
+        const jobId = interview.jobId;
 
         if (action === 'accept') {
+            const selectedTime = document.querySelector('input[name="selectedTime"]:checked');
+            if (!selectedTime) {
+                alert('Please select an interview time');
+                return;
+            }
+
+            // Update interview status
             await updateDoc(interviewRef, {
                 status: 'confirmed',
-                confirmedAt: serverTimestamp()
+                confirmedAt: serverTimestamp(),
+                selectedTime: new Date(selectedTime.value),
+                confirmedTime: new Date(selectedTime.value)
             });
-            debugLog('✅ Interview accepted');
+
+            // Update application status
+            if (applicationId) {
+                debugLog('📝 Updating application status', { applicationId });
+                await updateDoc(doc(db, "applications", applicationId), {
+                    status: 'interview_confirmed',
+                    interviewConfirmedAt: serverTimestamp(),
+                    lastUpdated: serverTimestamp(),
+                    confirmedInterviewTime: new Date(selectedTime.value)
+                });
+            }
+
+            // Update job document if needed
+            if (jobId) {
+                debugLog('📝 Updating job application status', { jobId });
+                const jobRef = doc(db, "jobs", jobId);
+                await updateDoc(jobRef, {
+                    [`applicationStatuses.${applicationId}`]: 'interview_confirmed',
+                    lastUpdated: serverTimestamp()
+                });
+            }
+
+            debugLog('✅ All statuses updated successfully');
         } else {
+            // Handling decline action
             await updateDoc(interviewRef, {
                 status: 'declined',
                 declinedAt: serverTimestamp()
             });
-            debugLog('❌ Interview declined');
+
+            if (applicationId) {
+                debugLog('📝 Updating application status to declined', { applicationId });
+                await updateDoc(doc(db, "applications", applicationId), {
+                    status: 'interview_declined',
+                    interviewDeclinedAt: serverTimestamp(),
+                    lastUpdated: serverTimestamp()
+                });
+            }
+
+            if (jobId) {
+                debugLog('📝 Updating job application status to declined', { jobId });
+                const jobRef = doc(db, "jobs", jobId);
+                await updateDoc(jobRef, {
+                    [`applicationStatuses.${applicationId}`]: 'interview_declined',
+                    lastUpdated: serverTimestamp()
+                });
+            }
         }
 
-        // Refresh both sections
-        loadPendingInterviews();
-        loadConfirmedInterviews();
+        // Close modal
+        document.getElementById('interviewDetailsModal').classList.add('hidden');
+
+        // Refresh all relevant sections
+        await Promise.all([
+            loadPendingInterviews(),
+            loadConfirmedInterviews(),
+            loadRecentActivity(localStorage.getItem('loggedInUserId'))
+        ]);
 
     } catch (error) {
-        debugLog('❌ Error handling interview:', error);
+        debugLog('❌ Error handling interview:', {
+            error: error.message,
+            stack: error.stack
+        });
         alert('Error updating interview status. Please try again.');
     }
 };
+
+
 
 function updateDashboardLabels(accountType) {
     console.log(`[Dashboard] Updating dashboard labels for account type: ${accountType}`);
@@ -663,7 +686,13 @@ async function loadRecentActivity(userId) {
         querySnapshot.forEach(doc => {
             const application = doc.data();
             const submittedDate = application.createdAt ?
-                new Date(application.createdAt.toDate()).toLocaleDateString() : 'N/A';
+                (application.createdAt.toDate ?
+                    application.createdAt.toDate().toLocaleDateString() :
+                    new Date(application.createdAt).toLocaleDateString()
+                ) : 'N/A';
+
+            // Get the appropriate status label and description
+            const statusInfo = getApplicationStatusInfo(application.status);
 
             const applicationCard = document.createElement('div');
             applicationCard.className = 'bg-white rounded-lg shadow-md p-6 mb-4';
@@ -674,20 +703,31 @@ async function loadRecentActivity(userId) {
                         <p class="text-sm text-gray-600">${application.companyName}</p>
                         <p class="text-xs text-gray-500 mt-1">Applied: ${submittedDate}</p>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-sm ${getStatusStyle(application.status)}">
-                        ${application.status}
+                    <span class="px-3 py-1 rounded-full text-sm ${statusInfo.style}">
+                        ${statusInfo.label}
                     </span>
                 </div>
                 <div class="mt-4 pt-4 border-t border-gray-100">
                     <div class="text-sm text-gray-600">
                         <p class="line-clamp-2">${application.coverLetter}</p>
                     </div>
+                    ${application.confirmedInterviewTime ? `
+                        <div class="mt-3 p-3 bg-green-50 rounded-lg">
+                            <p class="text-sm text-green-700">
+                                <i class="fas fa-calendar-check mr-2"></i>
+                                Interview scheduled for: ${application.confirmedInterviewTime.toDate ?
+                        application.confirmedInterviewTime.toDate().toLocaleString() :
+                        new Date(application.confirmedInterviewTime).toLocaleString()}
+                            </p>
+                        </div>
+                    ` : ''}
+                    
                     <div class="mt-4 flex justify-between items-center">
                         <span class="text-sm text-gray-500">
-                            CV Used: ${application.cvId}
+                            ${statusInfo.description}
                         </span>
                         <button onclick="viewApplicationDetails('${doc.id}')" 
-                            class="text-kfupm-500 hover:text-kfupm-600 text-sm font-medium">
+                            class="text-academic-primary hover:text-academic-tertiary text-sm font-medium transition-colors">
                             View Details
                         </button>
                     </div>
@@ -705,11 +745,61 @@ async function loadRecentActivity(userId) {
     }
 }
 
+// Add this new helper function for detailed status information
+function getApplicationStatusInfo(status) {
+    const statusMap = {
+        'pending': {
+            label: 'Pending Review',
+            style: 'bg-yellow-100 text-yellow-800',
+            description: 'Application is pending review'
+        },
+        'reviewing': {
+            label: 'Under Review',
+            style: 'bg-blue-100 text-blue-800',
+            description: 'Your application is being reviewed'
+        },
+        'interview_requested': {
+            label: 'Interview Requested',
+            style: 'bg-purple-100 text-purple-800',
+            description: 'You have a pending interview request'
+        },
+        'interview_confirmed': {
+            label: 'Interview Scheduled',
+            style: 'bg-green-100 text-green-800',
+            description: 'Interview has been scheduled'
+        },
+        'interview_declined': {
+            label: 'Interview Declined',
+            style: 'bg-red-100 text-red-800',
+            description: 'Interview request was declined'
+        },
+        'accepted': {
+            label: 'Accepted',
+            style: 'bg-green-100 text-green-800',
+            description: 'Your application has been accepted'
+        },
+        'rejected': {
+            label: 'Rejected',
+            style: 'bg-red-100 text-red-800',
+            description: 'Application was not successful'
+        }
+    };
+
+    return statusMap[status] || {
+        label: 'Unknown Status',
+        style: 'bg-gray-100 text-gray-600',
+        description: 'Status unknown'
+    };
+}
+
 // Add this helper function for status styling
 function getStatusStyle(status) {
     const styles = {
         'pending': 'bg-yellow-100 text-yellow-800',
         'reviewing': 'bg-blue-100 text-blue-800',
+        'interview_requested': 'bg-purple-100 text-purple-800',
+        'interview_confirmed': 'bg-green-100 text-green-800',
+        'interview_declined': 'bg-red-100 text-red-800',
         'accepted': 'bg-green-100 text-green-800',
         'rejected': 'bg-red-100 text-red-800',
         'default': 'bg-gray-100 text-gray-600'
@@ -908,6 +998,7 @@ window.viewInterviewDetails = async (interviewId) => {
     const modal = document.getElementById('interviewDetailsModal');
     const modalContent = document.getElementById('interviewModalContent');
     const modalTitle = document.getElementById('modalTitle');
+    const timeSelectionForm = document.getElementById('timeSelectionForm');
 
     try {
         const interviewDoc = await getDoc(doc(db, "interviews", interviewId));
@@ -920,26 +1011,6 @@ window.viewInterviewDetails = async (interviewId) => {
         debugLog('📄 Interview data loaded', interview);
 
         modalTitle.textContent = `Interview with ${interview.companyName || 'Company'}`;
-
-        // Format proposed times safely
-        const timesList = interview.proposedTimes?.map(timestamp => {
-            // Handle both Firestore Timestamps and regular dates
-            const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-            return isNaN(date.getTime()) ? null : `
-                <div class="p-3 bg-academic-warm/5 rounded-lg">
-                    <time datetime="${date.toISOString()}" class="font-medium">
-                        ${date.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            })}
-                    </time>
-                </div>
-            `;
-        }).filter(Boolean).join('') || 'No times proposed';
 
         modalContent.innerHTML = `
             <div class="space-y-6">
@@ -958,38 +1029,75 @@ window.viewInterviewDetails = async (interviewId) => {
                     <p class="text-gray-600">${interview.duration ? `${interview.duration} minutes` : 'Not specified'}</p>
                 </div>
 
-                <div>
-                    <h4 class="text-lg font-medium text-gray-900">Proposed Interview Times</h4>
-                    <div class="mt-2 space-y-2">
-                        ${timesList}
-                    </div>
-                </div>
-
                 ${interview.notes ? `
                     <div>
                         <h4 class="text-lg font-medium text-gray-900">Additional Notes</h4>
                         <p class="text-gray-600">${interview.notes}</p>
                     </div>
                 ` : ''}
-
-                ${interview.status === 'pending' ? `
-                    <div class="pt-4 border-t border-gray-200">
-                        <h4 class="text-lg font-medium text-gray-900 mb-2">Response Required</h4>
-                        <p class="text-gray-600 mb-4">Please accept one of the proposed times or decline the interview request.</p>
-                        <div class="flex gap-3">
-                            <button onclick="handleInterview('${interviewId}', 'accept')" 
-                                class="flex-1 px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
-                                Accept Interview
-                            </button>
-                            <button onclick="handleInterview('${interviewId}', 'decline')"
-                                class="flex-1 px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-colors">
-                                Decline
-                            </button>
-                        </div>
-                    </div>
-                ` : ''}
             </div>
         `;
+
+        if (interview.status === 'pending') {
+            // Create time selection options
+            const timesList = interview.proposedTimes?.map((timestamp, index) => {
+                const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+                return isNaN(date.getTime()) ? null : `
+                    <div class="p-4 bg-academic-warm/5 rounded-lg">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="radio" name="selectedTime" value="${date.toISOString()}" 
+                                   class="mt-1 text-academic-primary focus:ring-academic-tertiary" required>
+                            <div>
+                                <time datetime="${date.toISOString()}" class="font-medium block">
+                                    ${date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })}
+                                </time>
+                                <span class="text-sm text-gray-600">
+                                    ${date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+                `;
+            }).filter(Boolean).join('');
+
+            // Update the time selection form
+            timeSelectionForm.innerHTML = `
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="text-lg font-medium text-gray-900 mb-2">Select Interview Time</h4>
+                    <p class="text-gray-600 mb-4">Please choose your preferred interview time:</p>
+                    <div class="space-y-3 mb-6">
+                        ${timesList}
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-academic-primary text-white rounded-lg hover:bg-academic-dark transition-colors">
+                            Accept Selected Time
+                        </button>
+                        <button type="button" onclick="handleInterview('${interviewId}', 'decline')"
+                            class="flex-1 px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                            Decline Interview
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Show the form and add submit handler
+            timeSelectionForm.classList.remove('hidden');
+            timeSelectionForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleInterview(interviewId, 'accept');
+            };
+        } else {
+            timeSelectionForm.classList.add('hidden');
+        }
 
         modal.classList.remove('hidden');
 

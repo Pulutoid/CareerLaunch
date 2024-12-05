@@ -181,36 +181,54 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-academic-primary">Interviews</h2>
                 <div class="flex gap-4">
-                    <button id="togglePending"
-                        class="text-academic-tertiary hover:text-academic-primary transition-colors">
+                    <span class="text-academic-tertiary">
                         <span
                             class="pending-count inline-flex items-center justify-center bg-academic-tertiary/20 text-academic-tertiary rounded-full w-6 h-6 text-sm mr-2">0</span>
-                        Pending Requests
-                    </button>
-                    <button id="toggleConfirmed"
-                        class="text-academic-tertiary hover:text-academic-primary transition-colors">
+                        Pending
+                    </span>
+                    <span class="text-green-600">
                         <span
                             class="confirmed-count inline-flex items-center justify-center bg-green-100 text-green-600 rounded-full w-6 h-6 text-sm mr-2">0</span>
                         Confirmed
-                    </button>
+                    </span>
                 </div>
             </div>
 
-            <!-- Pending Interview Requests -->
-            <div id="pendingInterviews" class="mb-6 space-y-4 hidden">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Pending Interview Requests</h3>
-                <div id="pendingInterviewsList" class="space-y-4">
-                    <div class="text-center text-gray-500 py-4">Loading requests...</div>
+            <!-- All Interviews Section -->
+            <div class="space-y-8">
+                <!-- Pending Interview Requests -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-academic-tertiary border-b pb-2">Pending Requests</h3>
+                    <div id="pendingInterviewsList" class="space-y-4">
+                        <div class="text-center text-gray-500 py-4">Loading requests...</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Confirmed Interviews -->
-            <div id="confirmedInterviews" class="space-y-4 hidden">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Confirmed Interviews</h3>
-                <div id="confirmedInterviewsList" class="space-y-4">
-                    <div class="text-center text-gray-500 py-4">Loading confirmed interviews...</div>
+                <!-- Confirmed Interviews -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-green-600 border-b pb-2">Confirmed Interviews</h3>
+                    <div id="confirmedInterviewsList" class="space-y-4">
+                        <div class="text-center text-gray-500 py-4">Loading confirmed interviews...</div>
+                    </div>
                 </div>
             </div>
+        </section>
+
+        <!-- Pending Interview Requests -->
+        <div id="pendingInterviews" class="mb-6 space-y-4 hidden">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Pending Interview Requests</h3>
+            <div id="pendingInterviewsList" class="space-y-4">
+                <div class="text-center text-gray-500 py-4">Loading requests...</div>
+            </div>
+        </div>
+
+        <!-- Confirmed Interviews -->
+        <div id="confirmedInterviews" class="space-y-4 hidden">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Confirmed Interviews</h3>
+            <div id="confirmedInterviewsList" class="space-y-4">
+                <div class="text-center text-gray-500 py-4">Loading confirmed interviews...</div>
+            </div>
+        </div>
         </section>
 
         <!-- Job Applications -->
@@ -257,6 +275,11 @@
             <div id="interviewModalContent" class="mt-4">
                 <!-- Content will be dynamically inserted here -->
             </div>
+            <form id="timeSelectionForm" class="hidden">
+                <div id="timeOptions" class="space-y-3 mb-4">
+                    <!-- Time options will be inserted here -->
+                </div>
+            </form>
         </div>
     </div>
 
