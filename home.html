@@ -42,8 +42,10 @@
                     <div id="userNav" class="hidden">
                         <a href="cv-builder.html" class="text-white hover:underline">CV Builder</a>
                         <a href="job-search.html" class="text-white hover:underline">Job Search</a>
-                        <a href="student-dashboard.html"
-                            class="bg-white text-sky-600 px-6 py-2 rounded-full shadow-md hover:bg-gray-200 transition duration-300">Dashboard</a>
+                        <button onclick="handleLogout()"
+                            class="bg-white text-red-600 px-6 py-2 rounded-full shadow-md hover:bg-gray-200 transition duration-300">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
                     </div>
                 </div>
             </div>
@@ -65,10 +67,16 @@
                     </a>
                 </div>
 
-                <div id="dashboardBtn" class="hidden">
+                <div id="studentDashboardBtn" class="hidden">
                     <a href="student-dashboard.html"
                         class="bg-emerald-500 text-white px-8 py-4 rounded-full text-lg font-semibold inline-block hover:bg-emerald-600 transition duration-300">
-                        Go to Dashboard
+                        Student Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                <div id="employerDashboardBtn" class="hidden">
+                    <a href="employer-dashboard.html"
+                        class="bg-blue-500 text-white px-8 py-4 rounded-full text-lg font-semibold inline-block hover:bg-blue-600 transition duration-300">
+                        Employer Dashboard <i class="fas fa-building ml-2"></i>
                     </a>
                 </div>
             </div>
@@ -124,35 +132,7 @@
         </div>
     </footer>
 
-    <script type="module">
-        document.addEventListener('DOMContentLoaded', () => {
-            const guestNav = document.getElementById('guestNav');
-            const userNav = document.getElementById('userNav');
-            const signUpBtn = document.getElementById('signUpBtn');
-            const dashboardBtn = document.getElementById('dashboardBtn');
-
-            const loggedInUserId = localStorage.getItem('loggedInUserId');
-            const accountType = localStorage.getItem('accountType');
-
-            if (loggedInUserId) {
-                guestNav.classList.add('hidden');
-                userNav.classList.remove('hidden');
-
-                if (accountType === 'student') {
-                    signUpBtn.classList.add('hidden');
-                    dashboardBtn.classList.remove('hidden');
-                } else {
-                    signUpBtn.classList.remove('hidden');
-                    dashboardBtn.classList.add('hidden');
-                }
-            } else {
-                guestNav.classList.remove('hidden');
-                userNav.classList.add('hidden');
-                signUpBtn.classList.remove('hidden');
-                dashboardBtn.classList.add('hidden');
-            }
-        });
-    </script>
+    <script type="module" src="js/home.js"></script>
 </body>
 
 </html>
