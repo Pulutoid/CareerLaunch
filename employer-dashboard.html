@@ -320,11 +320,44 @@
                     <!-- Applications Panel -->
                     <div class="w-1/2 p-6 overflow-y-auto">
                         <div class="mb-4">
-                            <h4 class="text-lg font-medium text-gray-900">Applications</h4>
-                            <p id="applicationStatus" class="text-sm text-gray-500"></p>
+                            <h4 class="text-lg font-medium text-gray-900">Applications & Interviews</h4>
+                            <div class="flex gap-4 mt-2">
+                                <span class="text-sm">
+                                    <span
+                                        class="inline-flex items-center justify-center bg-yellow-100 text-yellow-800 rounded-full w-6 h-6 text-xs mr-1 pending-count">0</span>
+                                    Pending
+                                </span>
+                                <span class="text-sm">
+                                    <span
+                                        class="inline-flex items-center justify-center bg-purple-100 text-purple-800 rounded-full w-6 h-6 text-xs mr-1 interview-count">0</span>
+                                    Interviews
+                                </span>
+                                <span class="text-sm">
+                                    <span
+                                        class="inline-flex items-center justify-center bg-green-100 text-green-800 rounded-full w-6 h-6 text-xs mr-1 confirmed-count">0</span>
+                                    Confirmed
+                                </span>
+                            </div>
                         </div>
-                        <div id="applicationsContainer" class="space-y-4">
-                            Loading applications...
+                        <!-- Applications Container -->
+                        <div class="space-y-6">
+                            <!-- Pending Applications -->
+                            <div>
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">Pending Applications</h5>
+                                <div id="pendingApplications" class="space-y-4"></div>
+                            </div>
+
+                            <!-- Interview Process -->
+                            <div>
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">Interview Process</h5>
+                                <div id="interviewApplications" class="space-y-4"></div>
+                            </div>
+
+                            <!-- Confirmed Interviews -->
+                            <div>
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">Confirmed Interviews</h5>
+                                <div id="confirmedApplications" class="space-y-4"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

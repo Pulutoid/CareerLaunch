@@ -6,6 +6,8 @@ import {
     addDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { initializeJobPosting } from './job-posting.js';
+let currentJobId = null;
+
 // Debug utilities
 const DEBUG = true;
 function debugLog(message, data = null) {
@@ -329,10 +331,12 @@ function getApplicationStatusStyle(status) {
 // Update the viewJobDetails function to also load applications
 window.viewJobDetails = async (jobId) => {
     debugLog('🔍 Viewing job details', { jobId });
+    currentJobId = jobId
     const modal = document.getElementById('jobDetailsModal');
     const content = document.getElementById('modalContent');
 
     try {
+        // Load job details
         const jobDoc = await getDoc(doc(db, "jobs", jobId));
         if (!jobDoc.exists()) {
             throw new Error('Job not found');
@@ -394,7 +398,20 @@ window.viewJobDetails = async (jobId) => {
         `;
 
         // Load applications
-        await loadJobApplications(jobId);
+        debugLog('📥 Loading applications for job', { jobId });
+        const applicationsQuery = query(
+            collection(db, "applications"),
+            where("jobId", "==", jobId)
+        );
+
+        const applicationsSnapshot = await getDocs(applicationsQuery);
+        const applications = applicationsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        debugLog('📊 Found applications', { count: applications.length });
+        updateApplicationsDisplay(jobId, applications);
 
         // Show modal
         modal.classList.remove('hidden');
@@ -404,6 +421,7 @@ window.viewJobDetails = async (jobId) => {
         showMessage('message', 'Error loading job details', 'error');
     }
 };
+
 
 window.closeJobModal = () => {
     debugLog('🔍 Closing job modal');
@@ -562,6 +580,7 @@ document.getElementById('interviewRequestForm').addEventListener('submit', async
         const interviewData = {
             applicationId: currentInterviewData.applicationId,
             employerId: employerId,
+            jobId: currentJobId,
             companyName: companyName,
             studentId: currentInterviewData.studentId,
             studentName: currentInterviewData.studentName,
@@ -673,6 +692,154 @@ async function loadRecentApplications(employerId) {
                 Error loading applications
             </div>`;
     }
+}
+
+function updateApplicationsDisplay(jobId, applications) {
+    debugLog('📊 Updating applications display', { jobId, applicationCount: applications.length });
+
+    const containers = {
+        pending: document.getElementById('pendingApplications'),
+        interview: document.getElementById('interviewApplications'),
+        confirmed: document.getElementById('confirmedApplications')
+    };
+
+    // Clear all containers
+    Object.values(containers).forEach(container => {
+        if (container) container.innerHTML = '';
+    });
+
+    // Counter for different statuses
+    const counts = {
+        pending: 0,
+        interview: 0,
+        confirmed: 0
+    };
+
+    applications.forEach(application => {
+        const { container, count } = getApplicationContainer(application.status);
+        if (containers[container]) {
+            counts[count]++;
+            containers[container].appendChild(
+                createApplicationCard(application)
+            );
+        }
+    });
+
+    // Update counters in UI
+    document.querySelector('.pending-count').textContent = counts.pending;
+    document.querySelector('.interview-count').textContent = counts.interview;
+    document.querySelector('.confirmed-count').textContent = counts.confirmed;
+
+    // Show "no applications" message if needed
+    Object.entries(containers).forEach(([key, container]) => {
+        if (container && container.children.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-4 text-sm">
+                    No ${key} applications
+                </div>`;
+        }
+    });
+}
+
+function getApplicationContainer(status) {
+    switch (status?.toLowerCase()) {
+        case 'pending':
+        case 'reviewing':
+            return { container: 'pending', count: 'pending' };
+        case 'interview_requested':
+            return { container: 'interview', count: 'interview' };
+        case 'interview_confirmed':
+            return { container: 'confirmed', count: 'confirmed' };
+        case 'interview_declined':
+            return { container: 'pending', count: 'pending' }; // Show declined ones in pending
+        default:
+            return { container: 'pending', count: 'pending' };
+    }
+}
+
+function createApplicationCard(application) {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-lg shadow-sm border border-gray-100 p-4';
+
+    const statusInfo = getStatusInfo(application.status);
+    const date = application.confirmedInterviewTime ?
+        new Date(application.confirmedInterviewTime.toDate ?
+            application.confirmedInterviewTime.toDate() :
+            application.confirmedInterviewTime
+        ).toLocaleString() : null;
+
+    card.innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+            <div>
+                <h4 class="font-medium text-gray-900">${application.userName}</h4>
+                <p class="text-sm text-gray-500">Applied: ${formatDate(application.createdAt)}</p>
+            </div>
+            <span class="px-2 py-1 text-xs rounded-full ${statusInfo.style}">
+                ${statusInfo.label}
+            </span>
+        </div>
+        <div class="text-sm text-gray-600 mb-3">
+            <p class="line-clamp-2">${application.coverLetter}</p>
+        </div>
+        ${date ? `
+            <div class="mt-2 p-2 bg-green-50 rounded text-sm text-green-700">
+                <i class="fas fa-calendar-check mr-1"></i>
+                Interview scheduled: ${date}
+            </div>
+        ` : ''}
+        <div class="flex justify-end gap-2 mt-3">
+            <button onclick="viewCV('${application.cvId}')" 
+                class="px-3 py-1.5 text-sm text-academic-primary hover:bg-academic-warm/10 rounded transition-colors">
+                <i class="fas fa-file-alt mr-1"></i>View CV
+            </button>
+            ${(application.status === 'pending' || application.status === 'reviewing') ? `
+                <button onclick="showInterviewModal('${application.id}', '${application.userId}', '${application.userName}')"
+                    class="px-3 py-1.5 text-sm bg-academic-primary text-white rounded hover:bg-academic-dark transition-colors">
+                    <i class="fas fa-calendar-plus mr-1"></i>Schedule Interview
+                </button>
+            ` : application.status === 'interview_requested' ? `
+                <span class="text-sm text-purple-600">
+                    <i class="fas fa-clock mr-1"></i>Awaiting Response
+                </span>
+            ` : application.status === 'interview_confirmed' ? `
+                <span class="text-sm text-green-600">
+                    <i class="fas fa-check-circle mr-1"></i>Interview Confirmed
+                </span>
+            ` : ''}
+        </div>
+    `;
+
+    return card;
+}
+
+function getStatusInfo(status) {
+    const statusMap = {
+        'pending': {
+            label: 'Pending Review',
+            style: 'bg-yellow-100 text-yellow-800'
+        },
+        'reviewing': {
+            label: 'Under Review',
+            style: 'bg-blue-100 text-blue-800'
+        },
+        'interview_requested': {
+            label: 'Interview Requested',
+            style: 'bg-purple-100 text-purple-800'
+        },
+        'interview_confirmed': {
+            label: 'Interview Scheduled',
+            style: 'bg-green-100 text-green-800'
+        },
+        'interview_declined': {
+            label: 'Interview Declined',
+            style: 'bg-red-100 text-red-800'
+        }
+    };
+
+    return statusMap[status] || {
+        label: 'Pending',
+        style: 'bg-gray-100 text-gray-600'
+    };
 }
 
 function initializeApplicationTrendsChart(employerId) {
